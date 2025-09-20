@@ -1,0 +1,124 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-center-start
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      config:
+        shared-configs:
+          - data-id: common.yml
+        username: nacos
+        password: nacos
+
+
+  mvc:
+    pathmatch:
+      #使用knife4j的项目，增加此配置
+      #Springfox使用的路径匹配是基于AntPathMatcher的，而Spring Boot 2.6.X使用的是PathPatternMatcher 解决knife4j匹配Spring Boot版本过高的问题
+      matching-strategy: ANT_PATH_MATCHER
+
+  # 文件上传大小限制
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+jasypt:
+  encryptor:
+    bootstrap: false
+
+springdoc:
+  packagesToScan: com.ravey.ai.user
+
+
+# MyBatis Plus相关配置信息。
+mybatis-plus:
+  # 实体类与数据库表的xml映射文件的位置。
+  mapper-locations: classpath*:/mappings/*Mapper.xml
+  # 实体类的包路径。正确方式：/**/.entity或者/**.entity；错误方式：**.entity
+  typeAliasesPackage: com.ravey.ai.user.**.entity
+  # MyBatis Plus一些全局配置。
+  global-config:
+    banner: false
+    db-config:
+      # 主键类型 "数据库ID自增","用户输入ID","全局唯一ID (数字类型唯一ID，适用于分布式)", "全局唯一ID UUID"
+      id-type: AUTO
+      # 表名和字段名是否使用下划线命名。
+      # 字段验证策略之 insert "忽略判断", "非 NULL 判断", "非空判断"
+      insert-strategy: not_empty
+      # 字段验证策略之 update "忽略判断", "非 NULL 判断", "非空判断"
+      update-strategy: not_empty
+      # 字段验证策略之 select "忽略判断", "非 NULL 判断", "非空判断"
+      where-strategy: not_empty
+      table-underline: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus,service-registry
+  # 指标配置
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  server:
+    port: 10080
+  tracing:
+    sampling:
+      probability: 1.0
+    enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  cloud:
+    nacos:
+      config:
+        server-addr: 127.0.0.1:8848
+        username: nacos
+        password: nacos
+
+---
+spring:
+  config:
+    activate:
+      on-profile: debug
+  cloud:
+    nacos:
+      config:
+        server-addr: nacos-2:8848
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  cloud:
+    nacos:
+      config:
+        server-addr: nacos-2:8848
+---
+spring:
+  config:
+    activate:
+      on-profile: pre
+  cloud:
+    nacos:
+      config:
+        server-addr: nacos-pre:8848
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  cloud:
+    nacos:
+      config:
+        server-addr: mse-65e04740-nacos-ans.mse.aliyuncs.com:8848

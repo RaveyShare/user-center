@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>user-center</artifactId>
+        <groupId>com.ravey.ai.user</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>user-center-service</artifactId>
+
+    <name>user-center-service</name>
+    <description>用户中心service层</description>
+
+    <dependencies>
+        
+        <dependency>
+            <groupId>com.ravey.common</groupId>
+            <artifactId>common-service</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.ravey.common</groupId>
+            <artifactId>common-dao-mp</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ravey.common</groupId>
+            <artifactId>common-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ravey.ai.user</groupId>
+            <artifactId>user-center-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ravey.common</groupId>
+            <artifactId>common-utils</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-bootstrap</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
