@@ -110,6 +110,29 @@
             <artifactId>commons-collections4</artifactId>
         </dependency>
     </dependencies>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/RaveyShare/user-center</url>
+        </repository>
+        <snapshotRepository>
+            <id>github</id>
+            <name>GitHub Packages snapshot</name>
+            <url>https://maven.pkg.github.com/RaveyShare/user-center</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <scm>
+        <!-- 匿名只读访问（通常用 https） -->
+        <connection>scm:git:https://github.com/RaveyShare/user-center.git</connection>
+        <!-- 开发者可写访问（通常用 ssh） -->
+        <developerConnection>scm:git:git@github.com:RaveyShare/user-center.git</developerConnection>
+        <!-- 项目主页 -->
+        <url>https://github.com/RaveyShare/user-center</url>
+        <!-- 当前分支/Tag，开发时一般填 HEAD -->
+        <tag>HEAD</tag>
+    </scm>
 
     <build>
         <pluginManagement>
