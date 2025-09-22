@@ -20,6 +20,11 @@ spring:
 logs:
   dir: ${user.home}/logs
 
+#logging:
+#  level:
+#    com.alibaba.nacos: DEBUG
+#    com.alibaba.cloud.nacos: DEBUG
+
 mybatis-plus:
   configuration:
     # SQL输出调试器，用于将SQL语句和结果输出到控制台，以便调试。开发测试环境使用，不建议生产环境使用。

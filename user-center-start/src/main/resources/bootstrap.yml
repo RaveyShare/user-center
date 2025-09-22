@@ -13,6 +13,8 @@ spring:
           - data-id: common.yml
         username: nacos
         password: nacos
+        namespace: public
+        group: DEFAULT_GROUP
 
 
   mvc:
