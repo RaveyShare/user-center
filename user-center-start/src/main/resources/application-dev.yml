@@ -10,6 +10,12 @@ spring:
         server-addr: ${spring.cloud.nacos.config.server-addr}
         username: ${spring.cloud.nacos.config.username}
         password: ${spring.cloud.nacos.config.password}
+  data:
+    redis:
+      host: ${common.redis.host}
+      password: ${common.redis.password}
+      database: 0
+
 
 logs:
   dir: ${user.home}/logs

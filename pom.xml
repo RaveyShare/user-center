@@ -23,7 +23,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.compilerVersion>17</maven.compiler.compilerVersion>
         <common.dependencies.version>1.0.0</common.dependencies.version>
-        <common.version>1.0.0</common.version>
+        <common.version>1.0.1-SNAPSHOT</common.version>
     </properties>
 
     <dependencyManagement>
