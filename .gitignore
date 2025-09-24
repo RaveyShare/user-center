@@ -147,3 +147,4 @@ fabric.properties
 *.iml
 out
 gen
+.trae
