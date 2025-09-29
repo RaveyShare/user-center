@@ -6,15 +6,16 @@ spring:
     name: user-center-start
   profiles:
     active: dev
+  config:
+    import:
+      - nacos:common.yml?group=DEFAULT_GROUP&refreshEnabled=true
   cloud:
     nacos:
       config:
         server-addr: 127.0.0.1:8848
-        shared-configs:
-          - data-id: common.yml
         username: nacos
         password: nacos
-        namespace: public
+        namespace: ""
         group: DEFAULT_GROUP
 
 
@@ -80,15 +81,15 @@ spring:
   config:
     activate:
       on-profile: dev
+    import:
+      - nacos:common.yml?group=DEFAULT_GROUP&refreshEnabled=true
   cloud:
     nacos:
       config:
         server-addr: 127.0.0.1:8848
-        shared-configs:
-          - data-id: common.yml
         username: nacos
         password: nacos
-        namespace: public
+        namespace: ""
         group: DEFAULT_GROUP
 
 ---
@@ -96,15 +97,15 @@ spring:
   config:
     activate:
       on-profile: debug
+    import:
+      - nacos:common.yml?group=DEFAULT_GROUP&refreshEnabled=true
   cloud:
     nacos:
       config:
         server-addr: 127.0.0.1:8848
         username: nacos
         password: nacos
-        shared-configs:
-          - data-id: common.yml
-        namespace: public
+        namespace: ""
         group: DEFAULT_GROUP
 
 ---
@@ -112,15 +113,15 @@ spring:
   config:
     activate:
       on-profile: test
+    import:
+      - nacos:common.yml?group=DEFAULT_GROUP&refreshEnabled=true
   cloud:
     nacos:
       config:
         server-addr: 127.0.0.1:8848
         username: nacos
         password: nacos
-        shared-configs:
-          - data-id: common.yml
-        namespace: public
+        namespace: ""
         group: DEFAULT_GROUP
 ---
 spring:

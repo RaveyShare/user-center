@@ -1,4 +1,4 @@
-package com.ravey.ai.user.web.front.controller;
+package com.ravey.ai.user.web.controller.admin;
 
 import com.ravey.ai.user.api.model.req.AppCreateReq;
 import com.ravey.ai.user.api.model.res.AppListRes;
@@ -19,7 +19,7 @@ import jakarta.validation.Valid;
  * @since 1.0.0
  */
 @RestController
-@RequestMapping("/api/admin/apps")
+@RequestMapping("/admin/apps")
 @RequiredArgsConstructor
 @Tag(name = "应用管理", description = "应用管理相关接口")
 public class AppsController {
@@ -33,7 +33,7 @@ public class AppsController {
      * @return 应用信息
      */
     @PostMapping("createApp")
-    @Operation(summary = "创建应用", description = "创建新的小程序应用")
+    @Operation(summary = "创建应用", description = "创建新的应用")
     public HttpResult<AppRes> createApp(@Valid @RequestBody AppCreateReq req) {
         AppRes appRes = appsService.createApp(req);
         return HttpResult.success(appRes);
