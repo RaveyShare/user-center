@@ -22,7 +22,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.compilerVersion>17</maven.compiler.compilerVersion>
-        <common.dependencies.version>1.0.0</common.dependencies.version>
+        <common.dependencies.version>1.0.1-SNAPSHOT</common.dependencies.version>
         <common.version>1.0.1-SNAPSHOT</common.version>
     </properties>
 
@@ -64,6 +64,11 @@
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-utils</artifactId>
+                <version>${common.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ravey.common</groupId>
+                <artifactId>common-redis</artifactId>
                 <version>${common.version}</version>
             </dependency>
 

@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mysql://${common.mysql.url}:3306/user_center?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&serverTimezone=Asia/Shanghai
-    username: ${common.mysql.username}
-    password: ${common.mysql.password}
+    url: jdbc:mysql://localhost:3306/user_center?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
   cloud:
     nacos:

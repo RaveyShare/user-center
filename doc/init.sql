@@ -10,10 +10,10 @@ CREATE TABLE apps (
     description VARCHAR(500) COMMENT '应用描述',
     status TINYINT DEFAULT 1 COMMENT '应用状态：1-正常，0-禁用',
     creator VARCHAR(50) COMMENT '创建人',
-    creator_id BIGINT COMMENT '创建人ID',
+    creator_id VARCHAR(50) COMMENT '创建人ID',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updater VARCHAR(50) COMMENT '更新人',
-    updater_id BIGINT COMMENT '更新人ID',
+    updater_id VARCHAR(50) COMMENT '更新人ID',
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='应用表';
 
@@ -24,10 +24,10 @@ CREATE TABLE users (
     avatar_url VARCHAR(500) COMMENT '头像URL',
     status TINYINT DEFAULT 1 COMMENT '用户状态：1-正常，0-禁用',
     creator VARCHAR(50) COMMENT '创建人',
-    creator_id BIGINT COMMENT '创建人ID',
+    creator_id VARCHAR(50) COMMENT '创建人ID',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updater VARCHAR(50) COMMENT '更新人',
-    updater_id BIGINT COMMENT '更新人ID',
+    updater_id VARCHAR(50) COMMENT '更新人ID',
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
@@ -40,10 +40,10 @@ CREATE TABLE user_apps (
     unionid VARCHAR(100) COMMENT '微信unionId',
     status TINYINT DEFAULT 1 COMMENT '关联状态：1-正常，0-禁用',
     creator VARCHAR(50) COMMENT '创建人',
-    creator_id BIGINT COMMENT '创建人ID',
+    creator_id VARCHAR(50) COMMENT '创建人ID',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updater VARCHAR(50) COMMENT '更新人',
-    updater_id BIGINT COMMENT '更新人ID',
+    updater_id VARCHAR(50) COMMENT '更新人ID',
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     UNIQUE KEY uk_user_app (user_id, app_id),
     UNIQUE KEY uk_app_openid (app_id, openid),
@@ -61,10 +61,10 @@ CREATE TABLE qr_login_records (
     status TINYINT DEFAULT 0 COMMENT '状态：0-待扫码，1-已扫码待确认，2-已确认，3-已过期',
     expire_time DATETIME NOT NULL COMMENT '过期时间',
     creator VARCHAR(50) COMMENT '创建人',
-    creator_id BIGINT COMMENT '创建人ID',
+    creator_id VARCHAR(50) COMMENT '创建人ID',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updater VARCHAR(50) COMMENT '更新人',
-    updater_id BIGINT COMMENT '更新人ID',
+    updater_id VARCHAR(50) COMMENT '更新人ID',
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     FOREIGN KEY (app_id) REFERENCES apps(id) ON DELETE SET NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
@@ -80,10 +80,10 @@ CREATE TABLE user_sessions (
     user_agent VARCHAR(500) COMMENT '用户代理',
     expire_time DATETIME NOT NULL COMMENT '过期时间',
     creator VARCHAR(50) COMMENT '创建人',
-    creator_id BIGINT COMMENT '创建人ID',
+    creator_id VARCHAR(50) COMMENT '创建人ID',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updater VARCHAR(50) COMMENT '更新人',
-    updater_id BIGINT COMMENT '更新人ID',
+    updater_id VARCHAR(50) COMMENT '更新人ID',
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (app_id) REFERENCES apps(id) ON DELETE SET NULL
