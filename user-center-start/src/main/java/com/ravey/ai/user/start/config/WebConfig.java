@@ -1,5 +1,7 @@
 package com.ravey.ai.user.start.config;
 
+// import com.ravey.ai.user.web.filter.MiniAppTokenFilter;
+// import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -43,4 +45,18 @@ public class WebConfig {
         
         return restTemplate;
     }
+
+    /**
+     * 注册 MiniAppTokenFilter 过滤器
+     * 注意：由于Filter已经用@Component注解，Spring会自动注册，这里暂时注释掉手动注册
+     */
+    // @Bean
+    // public FilterRegistrationBean<MiniAppTokenFilter> miniAppTokenFilterRegistration(MiniAppTokenFilter miniAppTokenFilter) {
+    //     FilterRegistrationBean<MiniAppTokenFilter> registration = new FilterRegistrationBean<>();
+    //     registration.setFilter(miniAppTokenFilter);
+    //     registration.addUrlPatterns("/api/*"); // 只拦截API接口
+    //     registration.setOrder(1); // 设置过滤器优先级
+    //     registration.setName("miniAppTokenFilter");
+    //     return registration;
+    // }
 }

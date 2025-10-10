@@ -1,4 +1,6 @@
 spring:
+  main:
+    allow-bean-definition-overriding: true
   datasource:
     url: jdbc:mysql://${common.mysql.url}:3306/user_center?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&serverTimezone=Asia/Shanghai
     username: ${common.mysql.username}
@@ -15,8 +17,15 @@ spring:
     redis:
       host: ${common.redis.host}
       port: 6379
-      password:
+      password: ${common.redis.password}
       database: 0
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
 
 # JWT配置
 jwt:
@@ -28,6 +37,7 @@ wechat:
   api:
     base-url: https://api.weixin.qq.com
     session-url: /sns/jscode2session
+    token-url: /cgi-bin/token
 
 logs:
   dir: ${user.home}/logs

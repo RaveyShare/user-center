@@ -1,16 +1,19 @@
 package com.ravey.ai.user.service.api.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ravey.ai.user.api.model.dto.WeChatSessionDto;
+import com.ravey.ai.user.service.cache.CacheService;
+import com.ravey.ai.user.service.converter.AppsConverter;
 import com.ravey.ai.user.service.dao.entity.Apps;
 import com.ravey.ai.user.service.dao.mapper.AppsMapper;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
-
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
 /**
  * 微信API服务实现类
@@ -25,6 +28,7 @@ public class WeChatServiceImpl {
 
     private final RestTemplate restTemplate;
     private final AppsMapper appsMapper;
+    private final CacheService cacheService;
 
     @Value("${wechat.api.base-url}")
     private String wechatApiBaseUrl;
@@ -32,10 +36,63 @@ public class WeChatServiceImpl {
     @Value("${wechat.api.session-url}")
     private String wechatSessionUrl;
 
+    @Value("${wechat.api.token-url}")
+    private String wechatTokenUrl;
+
 
 
     /**
-     * 获取微信会话信息
+     * 获取微信小程序 Access Token（带缓存）
+     *
+     * @param appId 应用ID
+     * @return Access Token
+     */
+    public String getMiniAppAccessToken(String appId) {
+        try {
+            // 先从缓存获取
+            String cachedToken = cacheService.getMiniAppAccessToken(appId);
+            if (StringUtils.hasText(cachedToken)) {
+                log.debug("从缓存获取微信AccessToken: appId={}", appId);
+                return cachedToken;
+            }
+
+            // 缓存中没有，调用微信API获取
+            log.info("从微信API获取AccessToken: appId={}", appId);
+            
+            // 根据appId查询应用信息
+            Apps app = getAppByAppId(appId);
+            if (app == null) {
+                log.error("应用不存在或已禁用: {}", appId);
+                return null;
+            }
+
+            // 构建请求URL
+            String url = String.format("%s%s?grant_type=client_credential&appid=%s&secret=%s",
+                    wechatApiBaseUrl, wechatTokenUrl, app.getAppId(), app.getAppSecret());
+
+            // 调用微信API
+            WeChatAccessTokenResponse response = restTemplate.getForObject(url, WeChatAccessTokenResponse.class);
+
+            if (response != null && StringUtils.hasText(response.getAccessToken())) {
+                // 缓存token
+                cacheService.cacheMiniAppAccessToken(appId, response.getAccessToken());
+                log.info("获取微信AccessToken成功并缓存: appId={}", appId);
+                return response.getAccessToken();
+            } else {
+                log.error("获取微信AccessToken失败: appId={}, errcode={}, errmsg={}", 
+                        appId, response != null ? response.getErrcode() : "null", 
+                        response != null ? response.getErrmsg() : "null");
+                return null;
+            }
+
+        } catch (Exception e) {
+            log.error("获取微信AccessToken异常: appId={}", appId, e);
+            return null;
+        }
+    }
+
+    /**
+     * 获取微信会话信息（优化版本，添加缓存检查）
      *
      * @param appId 应用ID
      * @param code  微信授权码
@@ -43,13 +100,18 @@ public class WeChatServiceImpl {
      */
     public WeChatSessionDto getWeChatSession(String appId, String code) {
         try {
-            // 根据appId查询应用信息
-            Apps app = appsMapper.selectOne(
-                    new LambdaQueryWrapper<Apps>()
-                            .eq(Apps::getAppId, appId)
-                            .eq(Apps::getStatus, 1)
-            );
+            // 检查微信授权码是否已使用（防重复）
+            Boolean codeUsed = cacheService.isWeChatCodeUsed(appId, code);
+            if (Boolean.TRUE.equals(codeUsed)) {
+                log.warn("微信授权码已使用: appId={}, code={}", appId, code);
+                WeChatSessionDto errorResult = new WeChatSessionDto();
+                errorResult.setErrcode(-1);
+                errorResult.setErrmsg("授权码已使用");
+                return errorResult;
+            }
 
+            // 根据appId查询应用信息（优先从缓存获取）
+            Apps app = getAppByAppId(appId);
             if (app == null) {
                 log.error("应用不存在或已禁用: {}", appId);
                 WeChatSessionDto errorResult = new WeChatSessionDto();
@@ -71,6 +133,8 @@ public class WeChatServiceImpl {
                 log.error("微信API调用失败: errcode={}, errmsg={}", result.getErrcode(), result.getErrmsg());
             } else {
                 log.info("微信API调用成功: openid={}", result != null ? result.getOpenid() : "null");
+                // 标记授权码已使用
+                cacheService.cacheWeChatSession(appId, code, true);
             }
 
             return result;
@@ -82,5 +146,51 @@ public class WeChatServiceImpl {
             errorResult.setErrmsg("调用微信API异常: " + e.getMessage());
             return errorResult;
         }
+    }
+
+    /**
+     * 根据appId获取应用信息（优先从缓存获取）
+     *
+     * @param appId 应用ID
+     * @return 应用信息
+     */
+    private Apps getAppByAppId(String appId) {
+        // 先从缓存获取
+        com.ravey.ai.user.api.dto.AppsDTO cachedApp = cacheService.getAppInfo(appId);
+        if (cachedApp != null) {
+            log.debug("从缓存获取应用信息: appId={}", appId);
+            // 转换API层AppsDTO为Service层Apps
+            return AppsConverter.toEntity(cachedApp);
+        }
+
+        // 缓存中没有，从数据库获取
+        Apps app = appsMapper.selectOne(
+                new LambdaQueryWrapper<Apps>()
+                        .eq(Apps::getAppId, appId)
+                        .eq(Apps::getStatus, 1)
+        );
+
+        if (app != null) {
+            // 缓存应用信息 - 转换Service层Apps为API层AppsDTO
+            cacheService.cacheAppInfo(AppsConverter.toDTO(app));
+            log.debug("从数据库获取应用信息并缓存: appId={}", appId);
+        }
+
+        return app;
+    }
+
+    /**
+     * 微信AccessToken响应类
+     */
+    @Data
+    public static class WeChatAccessTokenResponse {
+        @JsonProperty("access_token")
+        private String accessToken;
+
+        @JsonProperty("expires_in")
+        private Integer expiresIn;
+
+        private Integer errcode;
+        private String errmsg;
     }
 }

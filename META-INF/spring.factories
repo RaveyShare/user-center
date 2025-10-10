@@ -1,0 +1,4 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.ravey.common.redis.autoconfigure.MasterRedisConfiguration,\
+com.ravey.common.redis.autoconfigure.SlaveRedisConfiguration,\
+com.ravey.common.redis.autoconfigure.CustomLockConfiguration

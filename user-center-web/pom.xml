@@ -24,6 +24,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.ravey.ai.user</groupId>
+            <artifactId>user-center-service</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.ravey.common</groupId>
             <artifactId>common-api</artifactId>
         </dependency>

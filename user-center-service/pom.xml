@@ -49,6 +49,12 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-bootstrap</artifactId>
         </dependency>
+
+        <!-- Common Redis依赖 (已包含spring-boot-starter-data-redis) -->
+        <dependency>
+            <groupId>com.ravey.common</groupId>
+            <artifactId>common-redis</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

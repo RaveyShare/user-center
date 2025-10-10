@@ -5,7 +5,10 @@ import com.ravey.ai.user.api.model.dto.WeChatSessionDto;
 import com.ravey.ai.user.api.model.req.MiniProgramLoginReq;
 import com.ravey.ai.user.api.model.res.MiniProgramLoginRes;
 import com.ravey.ai.user.api.service.AuthService;
+import com.ravey.ai.user.service.cache.CacheService;
 import com.ravey.ai.user.api.utils.JwtUtils;
+import com.ravey.ai.user.service.converter.UsersConverter;
+import com.ravey.ai.user.service.converter.AppsConverter;
 import com.ravey.ai.user.service.dao.entity.Apps;
 import com.ravey.ai.user.service.dao.entity.UserApps;
 import com.ravey.ai.user.service.dao.entity.UserSessions;
@@ -35,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final WeChatServiceImpl weChatService;
     private final JwtUtils jwtUtils;
+    private final CacheService cacheService;
     private final AppsMapper appsMapper;
     private final UsersMapper usersMapper;
     private final UserAppsMapper userAppsMapper;
@@ -53,13 +57,8 @@ public class AuthServiceImpl implements AuthService {
                 throw new RuntimeException("微信登录失败: " + (weChatSession != null ? weChatSession.getErrmsg() : "未知错误"));
             }
 
-            // 2. 获取应用信息
-            Apps app = appsMapper.selectOne(
-                    new LambdaQueryWrapper<Apps>()
-                            .eq(Apps::getAppId, req.getAppId())
-                            .eq(Apps::getStatus, 1)
-            );
-
+            // 2. 获取应用信息（优先从缓存获取）
+            Apps app = getAppByAppId(req.getAppId());
             if (app == null) {
                 throw new RuntimeException("应用不存在或已禁用");
             }
@@ -71,12 +70,16 @@ public class AuthServiceImpl implements AuthService {
             UserApps userApp = findOrCreateUserApp(user.getId(), app.getId(), weChatSession);
 
             // 5. 生成JWT令牌
-            String token = jwtUtils.generateToken(user.getId(), app.getId());
+            String token = jwtUtils.generateToken(user.getId(), app.getAppId());
 
-            // 6. 创建会话记录
+            // 6. 创建会话记录和缓存
             createUserSession(user.getId(), app.getId(), token);
+            cacheService.cacheUserSession(token, user.getId());
+            
+            // 7. 缓存用户信息 - 转换Service层Users为API层UsersDTO
+            cacheService.cacheUserInfo(UsersConverter.toDTO(user));
 
-            // 7. 构建响应
+            // 8. 构建响应
             MiniProgramLoginRes response = new MiniProgramLoginRes();
             response.setToken(token);
 
@@ -148,9 +151,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 查找或创建用户应用关联
+     * 查找或创建用户应用关联（优化版本，添加缓存检查）
      */
     private UserApps findOrCreateUserApp(Long userId, Long appId, WeChatSessionDto weChatSession) {
+        // 先检查缓存中的用户应用关联
+        Boolean cachedExists = cacheService.getUserApp(userId, String.valueOf(appId));
+        
         // 查找现有关联
         UserApps userApp = userAppsMapper.selectOne(
                 new LambdaQueryWrapper<UserApps>()
@@ -167,6 +173,10 @@ public class AuthServiceImpl implements AuthService {
             userApp.setUnionid(weChatSession.getUnionid());
             userApp.setStatus(1);
             userAppsMapper.insert(userApp);
+            
+            // 缓存用户应用关联
+            cacheService.cacheUserApp(userId, String.valueOf(appId), true);
+            
             log.info("创建用户应用关联: userId={}, appId={}", userId, appId);
         } else {
             // 更新openid和unionid（可能会变化）
@@ -183,6 +193,9 @@ public class AuthServiceImpl implements AuthService {
                 userAppsMapper.updateById(userApp);
                 log.info("更新用户应用关联: userId={}, appId={}", userId, appId);
             }
+            
+            // 如果关联已存在，也缓存一下
+            cacheService.cacheUserApp(userId, String.valueOf(appId), true);
         }
 
         return userApp;
@@ -200,4 +213,33 @@ public class AuthServiceImpl implements AuthService {
         userSessionsMapper.insert(session);
         log.info("创建用户会话: userId={}, appId={}", userId, appId);
     }
+
+    /**
+     * 获取应用信息（优先从缓存获取）
+     */
+    private Apps getAppByAppId(String appId) {
+        // 先从缓存获取
+        com.ravey.ai.user.api.dto.AppsDTO cachedApp = cacheService.getAppInfo(appId);
+        if (cachedApp != null) {
+            log.debug("从缓存获取应用信息成功，appId: {}", appId);
+            // 转换API层AppsDTO为Service层Apps
+            return AppsConverter.toEntity(cachedApp);
+        }
+
+        // 缓存中没有，从数据库查询
+        Apps app = appsMapper.selectOne(
+                new LambdaQueryWrapper<Apps>()
+                        .eq(Apps::getAppId, appId)
+                        .eq(Apps::getStatus, 1)
+        );
+
+        if (app != null) {
+            // 缓存应用信息 - 转换Service层Apps为API层AppsDTO
+            cacheService.cacheAppInfo(AppsConverter.toDTO(app));
+            log.debug("从数据库获取应用信息并缓存，appId: {}", appId);
+        }
+
+        return app;
+    }
+
 }
