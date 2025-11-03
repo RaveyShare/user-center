@@ -17,6 +17,11 @@ public class MiniProgramLoginRes {
     private String token;
 
     /**
+     * 令牌过期时间（秒）
+     */
+    private Long expiresIn;
+
+    /**
      * 用户信息
      */
     private UserInfo userInfo;

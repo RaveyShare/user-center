@@ -2,6 +2,7 @@ package com.ravey.ai.user.service.api.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ravey.ai.user.api.dto.AppsDTO;
 import com.ravey.ai.user.api.model.dto.WeChatSessionDto;
 import com.ravey.ai.user.service.cache.CacheService;
 import com.ravey.ai.user.service.converter.AppsConverter;
@@ -156,7 +157,7 @@ public class WeChatServiceImpl {
      */
     private Apps getAppByAppId(String appId) {
         // 先从缓存获取
-        com.ravey.ai.user.api.dto.AppsDTO cachedApp = cacheService.getAppInfo(appId);
+        AppsDTO cachedApp = cacheService.getAppInfo(appId);
         if (cachedApp != null) {
             log.debug("从缓存获取应用信息: appId={}", appId);
             // 转换API层AppsDTO为Service层Apps

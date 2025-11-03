@@ -15,13 +15,13 @@ public class MiniProgramLoginReq {
     /**
      * 小程序AppId
      */
-    @NotBlank(message = "小程序AppId不能为空")
+    @NotBlank(message = "应用ID不能为空")
     private String appId;
 
     /**
      * 微信授权码
      */
-    @NotBlank(message = "微信授权码不能为空")
+    @NotBlank(message = "登录凭证不能为空")
     private String code;
 
     /**

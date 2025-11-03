@@ -85,6 +85,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.ravey.ai.user.start.UserCenterApplication</mainClass>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>

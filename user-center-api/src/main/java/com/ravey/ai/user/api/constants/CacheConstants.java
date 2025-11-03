@@ -33,6 +33,18 @@ public class CacheConstants {
     public static final String USER_SESSION_KEY = "user:session:{}";
 
     /**
+     * 用户Token缓存键（参考 new-retail-guide 双向缓存设计）
+     * 格式：user:token:{userId}:{appId}
+     */
+    public static final String USER_TOKEN_KEY = "user:token:{}:{}";
+
+    /**
+     * Token到用户的反向缓存键
+     * 格式：token:user:{token}
+     */
+    public static final String TOKEN_USER_KEY = "token:user:{}";
+
+    /**
      * 用户应用关联缓存键
      * 格式：user:app:{userId}:{appId}
      */
@@ -43,6 +55,12 @@ public class CacheConstants {
      * 格式：wechat:session:{appId}:{code}
      */
     public static final String WECHAT_SESSION_KEY = "wechat:session:{}:{}";
+
+    /**
+     * 微信授权码缓存键
+     * 格式：wechat:code:{appId}:{code}
+     */
+    public static final String WECHAT_CODE_KEY = "wechat:code:{}:{}";
 
     // 缓存过期时间常量（秒）
     

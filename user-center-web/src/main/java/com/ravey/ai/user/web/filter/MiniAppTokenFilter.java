@@ -6,7 +6,7 @@ import com.ravey.ai.user.api.dto.UsersDTO;
 import com.ravey.ai.user.service.cache.CacheService;
 import com.ravey.ai.user.api.service.UsersService;
 import com.ravey.ai.user.api.utils.JwtUtils;
-import com.ravey.ai.user.api.vo.Result;
+import com.ravey.common.service.web.result.HttpResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -224,7 +224,7 @@ public class MiniAppTokenFilter implements Filter {
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
 
-            Result<Object> result = Result.error(status.value(), message);
+            HttpResult<Object> result = HttpResult.failure(status.value(), message);
             String jsonResponse = objectMapper.writeValueAsString(result);
             
             response.getWriter().write(jsonResponse);
