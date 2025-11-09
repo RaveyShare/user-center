@@ -22,7 +22,7 @@ import jakarta.annotation.Resource;
  */
 @Slf4j
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/front/auth")
 @Tag(name = "认证管理", description = "用户认证相关接口")
 public class AuthController {
 

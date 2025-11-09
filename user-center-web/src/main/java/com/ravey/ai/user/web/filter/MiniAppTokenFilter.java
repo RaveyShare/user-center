@@ -43,7 +43,7 @@ public class MiniAppTokenFilter implements Filter {
      * 不需要token验证的接口路径
      */
     private static final List<String> EXCLUDE_PATHS = Arrays.asList(
-            "/api/front/auth/miniProgram/login",
+            "/front/auth/wxMiniAppLogin",
             "/api/front/auth/qr/generate",
             "/api/front/auth/qr/check",
             "/health",
