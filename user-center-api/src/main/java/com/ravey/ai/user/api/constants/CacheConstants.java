@@ -62,6 +62,12 @@ public class CacheConstants {
      */
     public static final String WECHAT_CODE_KEY = "wechat:code:{}:{}";
 
+    /**
+     * 二维码登录确认后的临时Token缓存键
+     * 格式：qr:token:{qrcodeId}
+     */
+    public static final String QR_TOKEN_KEY = "qr:token:{}";
+
     // 缓存过期时间常量（秒）
     
     /**
@@ -93,6 +99,11 @@ public class CacheConstants {
      * 微信会话信息缓存时间：5分钟（微信code只能使用一次，短时间缓存防重复）
      */
     public static final long WECHAT_SESSION_EXPIRE = 5 * 60;
+
+    /**
+     * 二维码登录临时Token缓存时间：5分钟
+     */
+    public static final long QR_TOKEN_EXPIRE = 5 * 60;
 
     /**
      * 格式化缓存键

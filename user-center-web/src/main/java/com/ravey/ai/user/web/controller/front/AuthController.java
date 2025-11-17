@@ -4,6 +4,12 @@ import com.ravey.ai.user.api.model.req.MiniProgramLoginReq;
 import com.ravey.ai.user.api.model.res.MiniProgramLoginRes;
 import com.ravey.ai.user.api.service.AuthService;
 import com.ravey.common.service.web.result.HttpResult;
+import com.ravey.ai.user.api.model.req.QrGenerateReq;
+import com.ravey.ai.user.api.model.req.QrCheckReq;
+import com.ravey.ai.user.api.model.req.QrScanReq;
+import com.ravey.ai.user.api.model.req.QrConfirmReq;
+import com.ravey.ai.user.api.model.res.QrGenerateRes;
+import com.ravey.ai.user.api.model.res.QrCheckRes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +63,34 @@ public class AuthController {
             log.error("微信小程序登录失败: appId={}, error={}", request.getAppId(), e.getMessage(), e);
             throw new RuntimeException("登录失败: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/qr/generate")
+    @Operation(summary = "生成扫码登录二维码", description = "网页端生成二维码，用于小程序扫码登录")
+    public HttpResult<QrGenerateRes> generateQr(@RequestBody QrGenerateReq request) {
+        QrGenerateRes res = authService.generateQr(request);
+        return HttpResult.success(res);
+    }
+
+    @PostMapping("/qr/check")
+    @Operation(summary = "查询二维码状态", description = "网页端轮询二维码状态，确认后返回token")
+    public HttpResult<QrCheckRes> checkQr(@RequestBody QrCheckReq request) {
+        QrCheckRes res = authService.checkQr(request);
+        return HttpResult.success(res);
+    }
+
+    @PostMapping("/qr/scan")
+    @Operation(summary = "小程序扫码上报", description = "小程序扫码后上报二维码状态")
+    public HttpResult<Void> scanQr(@RequestBody QrScanReq request) {
+        authService.scanQr(request);
+        return HttpResult.success(null);
+    }
+
+    @PostMapping("/qr/confirm")
+    @Operation(summary = "小程序确认登录", description = "小程序在用户确认后提交登录确认")
+    public HttpResult<Void> confirmQr(@RequestBody QrConfirmReq request) {
+        authService.confirmQr(request);
+        return HttpResult.success(null);
     }
 
 

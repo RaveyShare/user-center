@@ -44,6 +44,8 @@ public class MiniAppTokenFilter implements Filter {
      */
     private static final List<String> EXCLUDE_PATHS = Arrays.asList(
             "/front/auth/wxMiniAppLogin",
+            "/front/auth/qr/generate",
+            "/front/auth/qr/check",
             "/api/front/auth/qr/generate",
             "/api/front/auth/qr/check",
             "/health",

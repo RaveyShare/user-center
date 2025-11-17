@@ -6,6 +6,12 @@ import com.ravey.ai.user.api.dto.UsersDTO;
 import com.ravey.ai.user.api.model.dto.WeChatSessionDto;
 import com.ravey.ai.user.api.model.req.MiniProgramLoginReq;
 import com.ravey.ai.user.api.model.res.MiniProgramLoginRes;
+import com.ravey.ai.user.api.model.req.QrGenerateReq;
+import com.ravey.ai.user.api.model.req.QrCheckReq;
+import com.ravey.ai.user.api.model.req.QrScanReq;
+import com.ravey.ai.user.api.model.req.QrConfirmReq;
+import com.ravey.ai.user.api.model.res.QrGenerateRes;
+import com.ravey.ai.user.api.model.res.QrCheckRes;
 import com.ravey.ai.user.api.service.AuthService;
 import com.ravey.ai.user.service.cache.CacheService;
 import com.ravey.ai.user.api.utils.JwtUtils;
@@ -14,10 +20,13 @@ import com.ravey.ai.user.service.dao.entity.Apps;
 import com.ravey.ai.user.service.dao.entity.UserApps;
 import com.ravey.ai.user.service.dao.entity.UserSessions;
 import com.ravey.ai.user.service.dao.entity.Users;
+import com.ravey.ai.user.service.dao.entity.QrLoginRecords;
 import com.ravey.ai.user.service.dao.mapper.AppsMapper;
 import com.ravey.ai.user.service.dao.mapper.UserAppsMapper;
 import com.ravey.ai.user.service.dao.mapper.UserSessionsMapper;
 import com.ravey.ai.user.service.dao.mapper.UsersMapper;
+import com.ravey.ai.user.service.dao.mapper.QrLoginRecordsMapper;
+import com.ravey.ai.user.service.context.UserContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.UUID;
 
 /**
  * 认证服务实现类
@@ -51,6 +62,8 @@ public class AuthServiceImpl implements AuthService {
     private UserAppsMapper userAppsMapper;
     @Resource
     private UserSessionsMapper userSessionsMapper;
+    @Resource
+    private QrLoginRecordsMapper qrLoginRecordsMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -83,6 +96,121 @@ public class AuthServiceImpl implements AuthService {
             log.error("小程序登录失败: appId={}, error={}", req.getAppId(), e.getMessage(), e);
             throw new RuntimeException("登录失败: " + e.getMessage());
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public QrGenerateRes generateQr(QrGenerateReq req) {
+        Apps app = validateAndGetApp(req.getAppId());
+        QrLoginRecords record = new QrLoginRecords();
+        String qrcodeId = UUID.randomUUID().toString().replace("-", "");
+        record.setQrcodeId(qrcodeId);
+        record.setAppId(app.getId());
+        record.setStatus(0);
+        LocalDateTime expire = LocalDateTime.now().plusMinutes(5);
+        record.setExpireTime(expire);
+        qrLoginRecordsMapper.insert(record);
+
+        QrGenerateRes res = new QrGenerateRes();
+        res.setQrcodeId(qrcodeId);
+        res.setExpireAt(expire.toInstant(ZoneOffset.UTC).toEpochMilli());
+        res.setQrContent("ravey-login://qr?qrcodeId=" + qrcodeId);
+        return res;
+    }
+
+    @Override
+    public QrCheckRes checkQr(QrCheckReq req) {
+        QrLoginRecords record = qrLoginRecordsMapper.selectOne(
+                new LambdaQueryWrapper<QrLoginRecords>()
+                        .eq(QrLoginRecords::getQrcodeId, req.getQrcodeId())
+                        .last("LIMIT 1")
+        );
+
+        QrCheckRes res = new QrCheckRes();
+        if (record == null) {
+            res.setStatus(3);
+            return res;
+        }
+
+        if (record.getExpireTime() != null && record.getExpireTime().isBefore(LocalDateTime.now())) {
+            record.setStatus(3);
+            qrLoginRecordsMapper.updateById(record);
+        }
+
+        res.setStatus(record.getStatus());
+        if (record.getStatus() != null && record.getStatus() == 2) {
+            String token = cacheService.getQrToken(record.getQrcodeId());
+            res.setToken(token);
+            if (record.getUserId() != null) {
+                Users user = usersMapper.selectById(record.getUserId());
+                if (user != null) {
+                    MiniProgramLoginRes.UserInfo info = new MiniProgramLoginRes.UserInfo();
+                    info.setId(user.getId());
+                    info.setNickname(user.getNickname());
+                    info.setAvatarUrl(user.getAvatarUrl());
+                    res.setUserInfo(info);
+                }
+            }
+        }
+        return res;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void scanQr(QrScanReq req) {
+        QrLoginRecords record = qrLoginRecordsMapper.selectOne(
+                new LambdaQueryWrapper<QrLoginRecords>()
+                        .eq(QrLoginRecords::getQrcodeId, req.getQrcodeId())
+                        .last("LIMIT 1")
+        );
+        if (record == null) {
+            throw new RuntimeException("二维码不存在");
+        }
+        if (record.getExpireTime() != null && record.getExpireTime().isBefore(LocalDateTime.now())) {
+            record.setStatus(3);
+            qrLoginRecordsMapper.updateById(record);
+            throw new RuntimeException("二维码已过期");
+        }
+        Long userId = UserContext.getCurrentUser() != null ? UserContext.getCurrentUser().getId() : null;
+        if (userId == null) {
+            throw new RuntimeException("未登录");
+        }
+        record.setUserId(userId);
+        record.setStatus(1);
+        qrLoginRecordsMapper.updateById(record);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void confirmQr(QrConfirmReq req) {
+        QrLoginRecords record = qrLoginRecordsMapper.selectOne(
+                new LambdaQueryWrapper<QrLoginRecords>()
+                        .eq(QrLoginRecords::getQrcodeId, req.getQrcodeId())
+                        .last("LIMIT 1")
+        );
+        if (record == null) {
+            throw new RuntimeException("二维码不存在");
+        }
+        if (record.getExpireTime() != null && record.getExpireTime().isBefore(LocalDateTime.now())) {
+            record.setStatus(3);
+            qrLoginRecordsMapper.updateById(record);
+            throw new RuntimeException("二维码已过期");
+        }
+        Long userId = UserContext.getCurrentUser() != null ? UserContext.getCurrentUser().getId() : null;
+        if (userId == null) {
+            throw new RuntimeException("未登录");
+        }
+        record.setUserId(userId);
+        record.setStatus(2);
+        qrLoginRecordsMapper.updateById(record);
+
+        Apps targetApp = appsMapper.selectById(record.getAppId());
+        if (targetApp == null) {
+            throw new RuntimeException("应用不存在或已禁用");
+        }
+        String accessToken = generateAccessToken(userId, targetApp.getAppId());
+        createAndCacheUserSession(userId, targetApp.getId(), accessToken);
+        cacheService.cacheQrToken(record.getQrcodeId(), accessToken);
     }
 
     /**

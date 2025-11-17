@@ -293,4 +293,16 @@ import org.springframework.beans.factory.annotation.Qualifier;
         
         log.debug("刷新用户会话过期时间: userId={}, token={}", userId, token.substring(0, 10) + "...");
     }
+
+    public void cacheQrToken(String qrcodeId, String token) {
+        String key = CacheConstants.formatKey(CacheConstants.QR_TOKEN_KEY, qrcodeId);
+        redisTemplate.opsForValue().set(key, token, CacheConstants.QR_TOKEN_EXPIRE, TimeUnit.SECONDS);
+        log.debug("缓存二维码登录Token: qrcodeId={}", qrcodeId);
+    }
+
+    public String getQrToken(String qrcodeId) {
+        String key = CacheConstants.formatKey(CacheConstants.QR_TOKEN_KEY, qrcodeId);
+        Object token = redisTemplate.opsForValue().get(key);
+        return token != null ? token.toString() : null;
+    }
 }
