@@ -194,4 +194,31 @@ public class WeChatServiceImpl {
         private Integer errcode;
         private String errmsg;
     }
+    /**
+     * 获取小程序码（无限制版）
+     */
+    public byte[] getWxaCodeUnlimited(String appId, String scene, String page, Integer width) {
+        try {
+            String accessToken = getMiniAppAccessToken(appId);
+            if (!StringUtils.hasText(accessToken)) {
+                return null;
+            }
+
+            String url = String.format("%swxa/getwxacodeunlimit?access_token=%s", wechatApiBaseUrl, accessToken);
+
+            java.util.Map<String, Object> body = new java.util.HashMap<>();
+            body.put("scene", scene);
+            if (StringUtils.hasText(page)) {
+                body.put("page", page);
+            }
+            if (width != null && width > 0) {
+                body.put("width", width);
+            }
+
+            return restTemplate.postForObject(url, body, byte[].class);
+        } catch (Exception e) {
+            log.error("获取小程序码失败: appId={}, scene={}", appId, scene, e);
+            return null;
+        }
+    }
 }

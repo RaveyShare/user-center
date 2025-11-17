@@ -44,4 +44,9 @@ public interface AuthService {
      * 小程序确认登录
      */
     void confirmQr(QrConfirmReq req);
+
+    /**
+     * 生成小程序码（携带二维码登录场景值）
+     */
+    com.ravey.ai.user.api.model.res.WxaCodeRes generateWxaCode(com.ravey.ai.user.api.model.req.WxaCodeReq req);
 }

@@ -12,6 +12,8 @@ import com.ravey.ai.user.api.model.req.QrScanReq;
 import com.ravey.ai.user.api.model.req.QrConfirmReq;
 import com.ravey.ai.user.api.model.res.QrGenerateRes;
 import com.ravey.ai.user.api.model.res.QrCheckRes;
+import com.ravey.ai.user.api.model.req.WxaCodeReq;
+import com.ravey.ai.user.api.model.res.WxaCodeRes;
 import com.ravey.ai.user.api.service.AuthService;
 import com.ravey.ai.user.service.cache.CacheService;
 import com.ravey.ai.user.api.utils.JwtUtils;
@@ -211,6 +213,37 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = generateAccessToken(userId, targetApp.getAppId());
         createAndCacheUserSession(userId, targetApp.getId(), accessToken);
         cacheService.cacheQrToken(record.getQrcodeId(), accessToken);
+    }
+
+    @Override
+    public WxaCodeRes generateWxaCode(WxaCodeReq req) {
+        Apps app = validateAndGetApp(req.getAppId());
+
+        QrLoginRecords record = qrLoginRecordsMapper.selectOne(
+                new LambdaQueryWrapper<QrLoginRecords>()
+                        .eq(QrLoginRecords::getQrcodeId, req.getQrcodeId())
+                        .last("LIMIT 1")
+        );
+        if (record == null) {
+            throw new RuntimeException("二维码不存在");
+        }
+        if (record.getExpireTime() != null && record.getExpireTime().isBefore(LocalDateTime.now())) {
+            record.setStatus(3);
+            qrLoginRecordsMapper.updateById(record);
+            throw new RuntimeException("二维码已过期");
+        }
+
+        byte[] bytes = weChatService.getWxaCodeUnlimited(app.getAppId(), req.getQrcodeId(), req.getPage(), req.getWidth());
+        if (bytes == null || bytes.length == 0) {
+            throw new RuntimeException("生成小程序码失败");
+        }
+        String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
+
+        WxaCodeRes res = new WxaCodeRes();
+        res.setQrcodeId(record.getQrcodeId());
+        res.setExpireAt(record.getExpireTime() != null ? record.getExpireTime().toInstant(ZoneOffset.UTC).toEpochMilli() : null);
+        res.setImageBase64(base64);
+        return res;
     }
 
     /**

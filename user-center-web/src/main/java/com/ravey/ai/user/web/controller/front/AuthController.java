@@ -10,6 +10,8 @@ import com.ravey.ai.user.api.model.req.QrScanReq;
 import com.ravey.ai.user.api.model.req.QrConfirmReq;
 import com.ravey.ai.user.api.model.res.QrGenerateRes;
 import com.ravey.ai.user.api.model.res.QrCheckRes;
+import com.ravey.ai.user.api.model.req.WxaCodeReq;
+import com.ravey.ai.user.api.model.res.WxaCodeRes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -91,6 +93,13 @@ public class AuthController {
     public HttpResult<Void> confirmQr(@RequestBody QrConfirmReq request) {
         authService.confirmQr(request);
         return HttpResult.success(null);
+    }
+
+    @PostMapping("/qr/wxacode")
+    @Operation(summary = "生成小程序码", description = "生成携带登录场景值的小程序码")
+    public HttpResult<WxaCodeRes> generateWxacode(@RequestBody WxaCodeReq request) {
+        WxaCodeRes res = authService.generateWxaCode(request);
+        return HttpResult.success(res);
     }
 
 
