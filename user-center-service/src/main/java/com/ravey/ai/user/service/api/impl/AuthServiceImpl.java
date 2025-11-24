@@ -233,9 +233,13 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("二维码已过期");
         }
 
-        byte[] bytes = weChatService.getWxaCodeUnlimited(app.getAppId(), req.getQrcodeId(), req.getPage(), req.getWidth());
+        byte[] cached = cacheService.getWxaCode(req.getQrcodeId());
+        byte[] bytes = cached != null ? cached : weChatService.getWxaCodeUnlimited(app.getAppId(), req.getQrcodeId(), req.getPage(), req.getWidth());
         if (bytes == null || bytes.length == 0) {
             throw new RuntimeException("生成小程序码失败");
+        }
+        if (cached == null) {
+            cacheService.cacheWxaCode(req.getQrcodeId(), bytes);
         }
         String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
 

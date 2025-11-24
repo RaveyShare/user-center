@@ -68,6 +68,12 @@ public class CacheConstants {
      */
     public static final String QR_TOKEN_KEY = "qr:token:{}";
 
+    /**
+     * 小程序码图片缓存键
+     * 格式：qr:wxacode:{qrcodeId}
+     */
+    public static final String WXA_CODE_KEY = "qr:wxacode:{}";
+
     // 缓存过期时间常量（秒）
     
     /**
@@ -104,6 +110,11 @@ public class CacheConstants {
      * 二维码登录临时Token缓存时间：5分钟
      */
     public static final long QR_TOKEN_EXPIRE = 5 * 60;
+
+    /**
+     * 小程序码缓存时间：与二维码有效期一致（5分钟）
+     */
+    public static final long WXA_CODE_EXPIRE = 5 * 60;
 
     /**
      * 格式化缓存键

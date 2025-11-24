@@ -15,6 +15,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+
+import cn.binarywang.wx.miniapp.api.WxMaService;
+import cn.binarywang.wx.miniapp.api.impl.WxMaServiceImpl;
+import cn.binarywang.wx.miniapp.config.impl.WxMaDefaultConfigImpl;
+import me.chanjar.weixin.common.error.WxErrorException;
+import cn.binarywang.wx.miniapp.bean.WxMaCodeLineColor;
 
 /**
  * 微信API服务实现类
@@ -68,11 +80,11 @@ public class WeChatServiceImpl {
             }
 
             // 构建请求URL
-            String url = String.format("%s%s?grant_type=client_credential&appid=%s&secret=%s",
-                    wechatApiBaseUrl, wechatTokenUrl, app.getAppId(), app.getAppSecret());
+            String tokenUrl = joinUrl(wechatApiBaseUrl, wechatTokenUrl) + String.format("?grant_type=client_credential&appid=%s&secret=%s",
+                    app.getAppId(), app.getAppSecret());
 
             // 调用微信API
-            WeChatAccessTokenResponse response = restTemplate.getForObject(url, WeChatAccessTokenResponse.class);
+            WeChatAccessTokenResponse response = restTemplate.getForObject(tokenUrl, WeChatAccessTokenResponse.class);
 
             if (response != null && StringUtils.hasText(response.getAccessToken())) {
                 // 缓存token
@@ -122,13 +134,13 @@ public class WeChatServiceImpl {
             }
 
             // 构建请求URL
-            String url = String.format("%s%s?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
-                    wechatApiBaseUrl, wechatSessionUrl, app.getAppId(), app.getAppSecret(), code);
+            String sessionUrl = joinUrl(wechatApiBaseUrl, wechatSessionUrl) + String.format("?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
+                    app.getAppId(), app.getAppSecret(), code);
 
             log.info("调用微信登录API: appId={}", appId);
 
             // 调用微信API
-            WeChatSessionDto result = restTemplate.getForObject(url, WeChatSessionDto.class);
+            WeChatSessionDto result = restTemplate.getForObject(sessionUrl, WeChatSessionDto.class);
 
             if (result != null && result.getErrcode() != null && result.getErrcode() != 0) {
                 log.error("微信API调用失败: errcode={}, errmsg={}", result.getErrcode(), result.getErrmsg());
@@ -204,21 +216,47 @@ public class WeChatServiceImpl {
                 return null;
             }
 
-            String url = String.format("%swxa/getwxacodeunlimit?access_token=%s", wechatApiBaseUrl, accessToken);
-
-            java.util.Map<String, Object> body = new java.util.HashMap<>();
-            body.put("scene", scene);
-            if (StringUtils.hasText(page)) {
-                body.put("page", page);
-            }
-            if (width != null && width > 0) {
-                body.put("width", width);
+            Apps app = getAppByAppId(appId);
+            if (app == null) {
+                log.error("应用不存在或已禁用: {}", appId);
+                return null;
             }
 
-            return restTemplate.postForObject(url, body, byte[].class);
+            WxMaDefaultConfigImpl config = new WxMaDefaultConfigImpl();
+            config.setAppid(app.getAppId());
+            config.setSecret(app.getAppSecret());
+
+            WxMaService wxService = new WxMaServiceImpl();
+            wxService.setWxMaConfig(config);
+
+            try {
+                int w = (width != null && width > 0) ? width : 430;
+                java.io.File file = wxService.getQrcodeService().createWxaCodeUnlimit(
+                        scene,
+                        page,
+                        false,       // isHyaline
+                        "trial",    // envVersion
+                        w,           // width
+                        true,        // autoColor
+                        (WxMaCodeLineColor) null,
+                        false        // checkPath
+                );
+                byte[] result = java.nio.file.Files.readAllBytes(file.toPath());
+                try { file.delete(); } catch (Exception ignore) {}
+                return result;
+            } catch (WxErrorException ex) {
+                log.error("获取小程序码失败: appId={}, scene={}, errcode={}, errmsg={}", appId, scene, ex.getError().getErrorCode(), ex.getError().getErrorMsg());
+                return null;
+            }
         } catch (Exception e) {
             log.error("获取小程序码失败: appId={}, scene={}", appId, scene, e);
             return null;
         }
+    }
+
+    private String joinUrl(String base, String path) {
+        String b = base == null ? "" : (base.endsWith("/") ? base.substring(0, base.length() - 1) : base);
+        String p = path == null ? "" : (path.startsWith("/") ? path.substring(1) : path);
+        return b + "/" + p;
     }
 }

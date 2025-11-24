@@ -305,4 +305,28 @@ import org.springframework.beans.factory.annotation.Qualifier;
         Object token = redisTemplate.opsForValue().get(key);
         return token != null ? token.toString() : null;
     }
+
+    /**
+     * 缓存小程序码图片字节
+     *
+     * @param qrcodeId 二维码ID
+     * @param bytes    图片字节
+     */
+    public void cacheWxaCode(String qrcodeId, byte[] bytes) {
+        String key = CacheConstants.formatKey(CacheConstants.WXA_CODE_KEY, qrcodeId);
+        redisTemplate.opsForValue().set(key, bytes, CacheConstants.WXA_CODE_EXPIRE, TimeUnit.SECONDS);
+        log.debug("缓存小程序码: qrcodeId={}", qrcodeId);
+    }
+
+    /**
+     * 获取已缓存的小程序码图片字节
+     *
+     * @param qrcodeId 二维码ID
+     * @return 图片字节
+     */
+    public byte[] getWxaCode(String qrcodeId) {
+        String key = CacheConstants.formatKey(CacheConstants.WXA_CODE_KEY, qrcodeId);
+        Object val = redisTemplate.opsForValue().get(key);
+        return val instanceof byte[] ? (byte[]) val : null;
+    }
 }
