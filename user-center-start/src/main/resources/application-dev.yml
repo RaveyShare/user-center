@@ -8,12 +8,10 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   cloud:
     nacos:
-      # 不需要在这里配置 username/password
-      # 会自动使用 bootstrap.yml 中的配置
       discovery:
-        server-addr: ${NACOS_SERVER_ADDR:8.136.44.41:8848}
-        namespace: ${NACOS_NAMESPACE:}
-        group: DEFAULT_GROUP
+        server-addr: ${spring.cloud.nacos.config.server-addr}
+        username: ${spring.cloud.nacos.config.username}
+        password: ${spring.cloud.nacos.config.password}
 
   data:
     redis:
