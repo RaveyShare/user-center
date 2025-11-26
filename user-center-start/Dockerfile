@@ -1,15 +1,22 @@
-FROM openjdk:17-slim
+# 使用 Eclipse Temurin JRE 17（Alpine Linux 版本，体积小）
+FROM eclipse-temurin:17-jre-alpine
 
+# 设置工作目录
 WORKDIR /app
 
-# 复制编译好的 jar
+# 复制构建好的 jar 文件
 COPY target/*.jar app.jar
 
-# 设置 JVM 参数
-ENV JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC"
+# 设置时区（可选）
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # 暴露端口
-EXPOSE 8081 10080
+EXPOSE 8081
+EXPOSE 10080
+
+# 配置 JVM 参数（可选）
+ENV JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC"
 
 # 启动应用
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
