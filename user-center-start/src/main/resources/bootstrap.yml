@@ -78,8 +78,8 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: ${NACOS_SERVER_ADDR:8.136.44.41:8848}
-        username: ${NACOS_USERNAME:nacos}
+        server-addr: ${NACOS_SERVER_ADDR}
+        username: ${NACOS_USERNAME}
         password: ${NACOS_PASSWORD}
         namespace: ""
         group: DEFAULT_GROUP
@@ -94,8 +94,8 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: ${NACOS_SERVER_ADDR:8.136.44.41:8848}
-        username: ${NACOS_USERNAME:nacos}
+        server-addr: ${NACOS_SERVER_ADDR}
+        username: ${NACOS_USERNAME}
         password: ${NACOS_PASSWORD}
         namespace: ""
         group: DEFAULT_GROUP
@@ -110,8 +110,8 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: ${NACOS_SERVER_ADDR:8.136.44.41:8848}
-        username: ${NACOS_USERNAME:nacos}
+        server-addr: ${NACOS_SERVER_ADDR}
+        username: ${NACOS_USERNAME}
         password: ${NACOS_PASSWORD}
         namespace: ""
         group: DEFAULT_GROUP
