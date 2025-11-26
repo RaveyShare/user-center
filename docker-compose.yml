@@ -1,0 +1,17 @@
+services:
+  user-center:
+    build:
+      context: ./user-center-start
+      dockerfile: Dockerfile
+    container_name: user-center
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      NACOS_USERNAME: ${NACOS_USERNAME}
+      NACOS_PASSWORD: ${NACOS_PASSWORD}
+      NACOS_SERVER_ADDR: ${NACOS_SERVER_ADDR}
+    ports:
+      - "8081:8081"
+      - "10080:10080"
+    restart: unless-stopped
