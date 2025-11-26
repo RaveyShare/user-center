@@ -26,6 +26,21 @@
         <common.version>1.0.1</common.version>
     </properties>
 
+    <!-- ⭐ 配置从 GitHub Packages 拉取依赖（通配符方式） -->
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/RaveyShare/*</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+    </repositories>
+
     <dependencyManagement>
         <dependencies>
             <!-- 公共依赖 start -->
@@ -48,13 +63,13 @@
                 <artifactId>common-api</artifactId>
                 <version>${common.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-service</artifactId>
                 <version>${common.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-dao-mp</artifactId>
@@ -66,6 +81,7 @@
                 <artifactId>common-utils</artifactId>
                 <version>${common.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-redis</artifactId>
@@ -115,6 +131,7 @@
             <artifactId>commons-collections4</artifactId>
         </dependency>
     </dependencies>
+
     <distributionManagement>
         <repository>
             <id>github</id>
@@ -129,13 +146,9 @@
     </distributionManagement>
 
     <scm>
-        <!-- 匿名只读访问（通常用 https） -->
         <connection>scm:git:https://github.com/RaveyShare/user-center.git</connection>
-        <!-- 开发者可写访问（通常用 ssh） -->
         <developerConnection>scm:git:git@github.com:RaveyShare/user-center.git</developerConnection>
-        <!-- 项目主页 -->
         <url>https://github.com/RaveyShare/user-center</url>
-        <!-- 当前分支/Tag，开发时一般填 HEAD -->
         <tag>HEAD</tag>
     </scm>
 
@@ -185,12 +198,9 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
                     <version>3.2.1</version>
-                    <!-- 绑定source插件到Maven的生命周期,并在生命周期后执行绑定的source的goal -->
                     <executions>
                         <execution>
-                            <!-- 绑定source插件到Maven的生命周期 -->
                             <phase>compile</phase>
-                            <!--在生命周期后执行绑定的source插件的goals -->
                             <goals>
                                 <goal>jar-no-fork</goal>
                             </goals>
