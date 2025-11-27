@@ -107,7 +107,10 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
             echo "🚀 Starting deployment for version ${{ steps.get_version.outputs.version }}..."
-            
+            echo "🔐 Logging in to Aliyun Registry..."
+            docker login ${{ env.ALIYUN_REGISTRY }} \
+              -u "${{ secrets.ALIYUN_USERNAME }}" \
+              -p "${{ secrets.ALIYUN_PASSWORD }}"
             cd /opt/user-center
             
             if [ ! -f .env ]; then
