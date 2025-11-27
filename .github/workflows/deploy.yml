@@ -58,8 +58,8 @@ jobs:
       # ⚠️ 关键：添加延迟或检查依赖是否可用
       - name: Wait for dependencies to be available
         run: |
-          echo "⏳ Waiting 30 seconds for dependencies to be published..."
-          sleep 30
+          echo "⏳ Waiting 120 seconds for dependencies to be published..."
+          sleep 120
           # 或者你可以添加一个脚本来检查依赖是否已发布
 
       - name: Build with Maven
