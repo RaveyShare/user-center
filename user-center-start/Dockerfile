@@ -1,10 +1,7 @@
-# 使用 Eclipse Temurin JRE 17（Alpine Linux 版本，体积小）
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 
-# 设置工作目录
 WORKDIR /app
 
-# 复制构建好的 jar 文件
 COPY target/*.jar app.jar
 
 # 设置时区（可选）
