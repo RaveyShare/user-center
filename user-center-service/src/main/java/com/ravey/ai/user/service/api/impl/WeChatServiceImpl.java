@@ -209,7 +209,7 @@ public class WeChatServiceImpl {
     /**
      * 获取小程序码（无限制版）
      */
-    public byte[] getWxaCodeUnlimited(String appId, String scene, String page, Integer width) {
+    public byte[] getWxaCodeUnlimited(String appId, String scene, String page, Integer width, String envVersion, Boolean checkPath, Boolean hyaline) {
         try {
             String accessToken = getMiniAppAccessToken(appId);
             if (!StringUtils.hasText(accessToken)) {
@@ -231,15 +231,18 @@ public class WeChatServiceImpl {
 
             try {
                 int w = (width != null && width > 0) ? width : 430;
+                String env = (envVersion != null && envVersion.length() > 0) ? envVersion : "release";
+                boolean chk = (checkPath == null) ? true : checkPath;
+                boolean hy = (hyaline == null) ? false : hyaline;
                 java.io.File file = wxService.getQrcodeService().createWxaCodeUnlimit(
                         scene,
                         page,
-                        false,       // isHyaline
-                        "trial",    // envVersion
+                        hy,          // isHyaline
+                        env,         // envVersion
                         w,           // width
                         true,        // autoColor
                         (WxMaCodeLineColor) null,
-                        false        // checkPath
+                        chk          // checkPath
                 );
                 byte[] result = java.nio.file.Files.readAllBytes(file.toPath());
                 try { file.delete(); } catch (Exception ignore) {}

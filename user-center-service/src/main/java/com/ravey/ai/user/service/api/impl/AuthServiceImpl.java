@@ -234,7 +234,15 @@ public class AuthServiceImpl implements AuthService {
         }
 
         byte[] cached = cacheService.getWxaCode(req.getQrcodeId());
-        byte[] bytes = cached != null ? cached : weChatService.getWxaCodeUnlimited(app.getAppId(), req.getQrcodeId(), req.getPage(), req.getWidth());
+        byte[] bytes = cached != null ? cached : weChatService.getWxaCodeUnlimited(
+                app.getAppId(),
+                req.getQrcodeId(),
+                req.getPage(),
+                req.getWidth(),
+                req.getEnvVersion(),
+                req.getCheckPath(),
+                req.getHyaline()
+        );
         if (bytes == null || bytes.length == 0) {
             throw new RuntimeException("生成小程序码失败");
         }

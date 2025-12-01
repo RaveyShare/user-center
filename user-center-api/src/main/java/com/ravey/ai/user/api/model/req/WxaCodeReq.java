@@ -12,4 +12,7 @@ public class WxaCodeReq {
     private String qrcodeId;
     private String page;
     private Integer width;
+    private String envVersion;
+    private Boolean checkPath;
+    private Boolean hyaline;
 }
