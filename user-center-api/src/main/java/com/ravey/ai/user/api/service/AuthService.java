@@ -1,13 +1,10 @@
 package com.ravey.ai.user.api.service;
 
-import com.ravey.ai.user.api.model.req.MiniProgramLoginReq;
+import com.ravey.ai.user.api.model.req.*;
 import com.ravey.ai.user.api.model.res.MiniProgramLoginRes;
-import com.ravey.ai.user.api.model.req.QrGenerateReq;
-import com.ravey.ai.user.api.model.req.QrCheckReq;
-import com.ravey.ai.user.api.model.req.QrScanReq;
-import com.ravey.ai.user.api.model.req.QrConfirmReq;
 import com.ravey.ai.user.api.model.res.QrGenerateRes;
 import com.ravey.ai.user.api.model.res.QrCheckRes;
+import com.ravey.ai.user.api.model.res.WxaCodeRes;
 
 /**
  * 认证服务接口
@@ -48,5 +45,6 @@ public interface AuthService {
     /**
      * 生成小程序码（携带二维码登录场景值）
      */
-    com.ravey.ai.user.api.model.res.WxaCodeRes generateWxaCode(com.ravey.ai.user.api.model.req.WxaCodeReq req);
+
+    WxaCodeRes generateWxaCode(WxaCodeReq req);
 }
