@@ -23,7 +23,8 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.compilerVersion>17</maven.compiler.compilerVersion>
         <common.dependencies.version>1.0.6</common.dependencies.version>
-        <common.version>1.0.1</common.version>
+        <common.version>1.0.3</common.version>
+        <weixin.java.miniapp.version>4.6.0</weixin.java.miniapp.version>
     </properties>
 
     <!-- ⭐ 配置从 GitHub Packages 拉取依赖（通配符方式） -->
@@ -86,6 +87,12 @@
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-redis</artifactId>
                 <version>${common.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.binarywang</groupId>
+                <artifactId>weixin-java-miniapp</artifactId>
+                <version>${weixin.java.miniapp.version}</version>
             </dependency>
 
 

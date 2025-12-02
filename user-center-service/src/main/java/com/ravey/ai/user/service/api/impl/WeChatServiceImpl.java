@@ -14,13 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
+import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
 
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.api.impl.WxMaServiceImpl;
@@ -39,7 +33,6 @@ import cn.binarywang.wx.miniapp.bean.WxMaCodeLineColor;
 @RequiredArgsConstructor
 public class WeChatServiceImpl {
 
-    private final RestTemplate restTemplate;
     private final AppsMapper appsMapper;
     private final CacheService cacheService;
 
@@ -79,22 +72,18 @@ public class WeChatServiceImpl {
                 return null;
             }
 
-            // 构建请求URL
-            String tokenUrl = joinUrl(wechatApiBaseUrl, wechatTokenUrl) + String.format("?grant_type=client_credential&appid=%s&secret=%s",
-                    app.getAppId(), app.getAppSecret());
-
-            // 调用微信API
-            WeChatAccessTokenResponse response = restTemplate.getForObject(tokenUrl, WeChatAccessTokenResponse.class);
-
-            if (response != null && StringUtils.hasText(response.getAccessToken())) {
-                // 缓存token
-                cacheService.cacheMiniAppAccessToken(appId, response.getAccessToken());
+            WxMaDefaultConfigImpl config = new WxMaDefaultConfigImpl();
+            config.setAppid(app.getAppId());
+            config.setSecret(app.getAppSecret());
+            WxMaService wxService = new WxMaServiceImpl();
+            wxService.setWxMaConfig(config);
+            String accessToken = wxService.getAccessToken();
+            if (StringUtils.hasText(accessToken)) {
+                cacheService.cacheMiniAppAccessToken(appId, accessToken);
                 log.info("获取微信AccessToken成功并缓存: appId={}", appId);
-                return response.getAccessToken();
+                return accessToken;
             } else {
-                log.error("获取微信AccessToken失败: appId={}, errcode={}, errmsg={}", 
-                        appId, response != null ? response.getErrcode() : "null", 
-                        response != null ? response.getErrmsg() : "null");
+                log.error("获取微信AccessToken失败: appId={}", appId);
                 return null;
             }
 
@@ -133,23 +122,21 @@ public class WeChatServiceImpl {
                 return errorResult;
             }
 
-            // 构建请求URL
-            String sessionUrl = joinUrl(wechatApiBaseUrl, wechatSessionUrl) + String.format("?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
-                    app.getAppId(), app.getAppSecret(), code);
-
             log.info("调用微信登录API: appId={}", appId);
-
-            // 调用微信API
-            WeChatSessionDto result = restTemplate.getForObject(sessionUrl, WeChatSessionDto.class);
-
-            if (result != null && result.getErrcode() != null && result.getErrcode() != 0) {
-                log.error("微信API调用失败: errcode={}, errmsg={}", result.getErrcode(), result.getErrmsg());
-            } else {
-                log.info("微信API调用成功: openid={}", result != null ? result.getOpenid() : "null");
-                // 标记授权码已使用
-                cacheService.cacheWeChatSession(appId, code, true);
-            }
-
+            WxMaDefaultConfigImpl config = new WxMaDefaultConfigImpl();
+            config.setAppid(app.getAppId());
+            config.setSecret(app.getAppSecret());
+            WxMaService wxService = new WxMaServiceImpl();
+            wxService.setWxMaConfig(config);
+            WxMaJscode2SessionResult session = wxService.jsCode2SessionInfo(code);
+            WeChatSessionDto result = new WeChatSessionDto();
+            result.setOpenid(session.getOpenid());
+            result.setSessionKey(session.getSessionKey());
+            result.setUnionid(session.getUnionid());
+            result.setErrcode(0);
+            result.setErrmsg(null);
+            log.info("微信API调用成功: openid={}", result.getOpenid());
+            cacheService.cacheWeChatSession(appId, code, true);
             return result;
 
         } catch (Exception e) {
