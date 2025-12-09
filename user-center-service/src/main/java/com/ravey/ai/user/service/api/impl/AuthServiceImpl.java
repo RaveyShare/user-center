@@ -1,6 +1,7 @@
 package com.ravey.ai.user.service.api.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.ravey.ai.user.api.dto.AppsDTO;
 import com.ravey.ai.user.api.dto.UsersDTO;
 import com.ravey.ai.user.api.model.dto.WeChatSessionDto;
@@ -106,6 +107,7 @@ public class AuthServiceImpl implements AuthService {
         Apps app = validateAndGetApp(req.getAppId());
         QrLoginRecords record = new QrLoginRecords();
         String qrcodeId = UUID.randomUUID().toString().replace("-", "");
+        record.setId(IdWorker.getId());
         record.setQrcodeId(qrcodeId);
         record.setAppId(app.getId());
         record.setStatus(0);
