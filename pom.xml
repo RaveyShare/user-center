@@ -4,7 +4,7 @@
 
     <groupId>com.ravey.ai.user</groupId>
     <artifactId>user-center</artifactId>
-    <version>1.0.11-SNAPSHOT</version>
+    <version>1.0.11</version>
     <name>user-center</name>
     <description>用户中心</description>
 
@@ -156,7 +156,7 @@
         <connection>scm:git:https://github.com/RaveyShare/user-center.git</connection>
         <developerConnection>scm:git:git@github.com:RaveyShare/user-center.git</developerConnection>
         <url>https://github.com/RaveyShare/user-center</url>
-        <tag>HEAD</tag>
+        <tag>v1.0.11</tag>
     </scm>
 
     <build>
