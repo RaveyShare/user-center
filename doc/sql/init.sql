@@ -117,11 +117,5 @@ CREATE INDEX idx_sessions_user_id ON user_sessions(user_id);
 CREATE INDEX idx_sessions_app_id ON user_sessions(app_id);
 CREATE INDEX idx_sessions_expire_time ON user_sessions(expire_time);
 
--- 初始化数据
--- 插入示例应用数据
-INSERT INTO apps (app_name, app_id, app_secret, description, creator) VALUES
-('商城小程序', 'wx1234567890abcdef', 'secret1234567890abcdef', '电商购物小程序', 'Ravey'),
-('服务小程序', 'wx0987654321fedcba', 'secret0987654321fedcba', '客户服务小程序', 'Ravey');
-
 -- 提交事务
 COMMIT;

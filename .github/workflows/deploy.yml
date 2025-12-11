@@ -1,4 +1,4 @@
-name: Build and Deploy to Aliyun
+name: Build and Push to Aliyun
 
 on:
   push:
@@ -11,7 +11,7 @@ env:
   IMAGE_NAME: ravey-prod/user-center
 
 jobs:
-  build-and-deploy:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
@@ -55,12 +55,10 @@ jobs:
           </settings>
           EOF
 
-      # ⚠️ 关键：添加延迟或检查依赖是否可用
       - name: Wait for dependencies to be available
         run: |
           echo "⏳ Waiting 120 seconds for dependencies to be published..."
           sleep 120
-          # 或者你可以添加一个脚本来检查依赖是否已发布
 
       - name: Build with Maven
         run: |
@@ -70,10 +68,6 @@ jobs:
           ls -lh target/*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
-
-      # ⭐ 去掉 QEMU（单平台构建不需要）
-      # - name: Set up QEMU
-      #   uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -85,13 +79,12 @@ jobs:
           username: ${{ secrets.ALIYUN_USERNAME }}
           password: ${{ secrets.ALIYUN_PASSWORD }}
 
-      # ⭐ 修改：只构建 linux/amd64 平台
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: ./user-center-start
           file: ./user-center-start/Dockerfile
-          platforms: linux/amd64  # 只构建 amd64，适用于阿里云 Ubuntu x86_64 服务器
+          platforms: linux/amd64
           push: true
           tags: |
             ${{ env.ALIYUN_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
@@ -99,52 +92,47 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Deploy to Aliyun Server
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: deploy
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            echo "🚀 Starting deployment for version ${{ steps.get_version.outputs.version }}..."
-            echo "🔐 Logging in to Aliyun Registry..."
-            docker login ${{ env.ALIYUN_REGISTRY }} \
-              -u "${{ secrets.ALIYUN_USERNAME }}" \
-              -p "${{ secrets.ALIYUN_PASSWORD }}"
-            cd /opt/user-center
-            
-            if [ ! -f .env ]; then
-              echo "❌ ERROR: .env file not found!"
-              exit 1
-            fi
-            
-            echo "📥 Pulling image version: ${{ steps.get_version.outputs.version }}..."
-            docker compose pull
-            
-            echo "🔄 Restarting containers..."
-            docker compose up -d
-            
-            sleep 5
-            
-            echo ""
-            echo "📊 Container status:"
-            docker compose ps
-            
-            echo ""
-            echo "📝 Latest logs:"
-            docker compose logs --tail=50 user-center
-            
-            echo ""
-            echo "✅ Deployment completed successfully!"
-            echo "Version: ${{ steps.get_version.outputs.version }}"
+      # 🎯 新增：触发服务端部署 Hook
+      - name: Trigger deployment hook
+        run: |
+          echo "🚀 Triggering deployment for user-center..."
+          
+          RESPONSE=$(curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Deploy-Token: ${{ secrets.DEPLOY_HOOK_TOKEN }}" \
+            -d '{
+              "service": "user-center",
+              "version": "${{ steps.get_version.outputs.version }}",
+              "image": "${{ env.ALIYUN_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.get_version.outputs.version }}",
+              "registry": "${{ env.ALIYUN_REGISTRY }}",
+              "triggered_by": "${{ github.actor }}",
+              "commit": "${{ github.sha }}",
+              "repository": "${{ github.repository }}"
+            }' \
+            -w "\n%{http_code}" \
+            ${{ secrets.DEPLOY_HOOK_URL }})
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          
+          echo "Response: $BODY"
+          echo "HTTP Code: $HTTP_CODE"
+          
+          if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 202 ]; then
+            echo "✅ Deployment hook triggered successfully!"
+          else
+            echo "❌ Failed to trigger deployment hook!"
+            exit 1
+          fi
 
-      - name: Deployment status
+      - name: Build status
         if: always()
         run: |
           if [ "${{ job.status }}" == "success" ]; then
-            echo "✅ Deployment succeeded!"
+            echo "✅ Build and push succeeded!"
             echo "Version: ${{ steps.get_version.outputs.version }}"
             echo "Image: ${{ env.ALIYUN_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.get_version.outputs.version }}"
+            echo "Deployment has been triggered on the server."
           else
-            echo "❌ Deployment failed!"
+            echo "❌ Build failed!"
           fi
