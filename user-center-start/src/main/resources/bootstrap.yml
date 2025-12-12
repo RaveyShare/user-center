@@ -115,22 +115,19 @@ spring:
         password: ${NACOS_PASSWORD}
         namespace: ""
         group: DEFAULT_GROUP
----
-spring:
-  config:
-    activate:
-      on-profile: pre
-  cloud:
-    nacos:
-      config:
-        server-addr: nacos-pre:8848
 
 ---
 spring:
   config:
     activate:
       on-profile: prod
+    import:
+      - nacos:common.yml?group=DEFAULT_GROUP&refreshEnabled=true
   cloud:
     nacos:
       config:
-        server-addr: mse-65e04740-nacos-ans.mse.aliyuncs.com:8848
+        server-addr: ${NACOS_SERVER_ADDR}
+        username: ${NACOS_USERNAME}
+        password: ${NACOS_PASSWORD}
+        namespace: ""
+        group: DEFAULT_GROUP

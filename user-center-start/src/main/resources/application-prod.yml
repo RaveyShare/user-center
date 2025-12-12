@@ -1,8 +1,10 @@
 spring:
+  main:
+    allow-bean-definition-overriding: true
   datasource:
-    url: jdbc:mysql://{common.mysql.url地址}:3306/user_center?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&serverTimezone=Asia/Shanghai
-    username: {common.mysql.username地址}
-    password: {common.mysql.password地址}
+    url: jdbc:mysql://${common.mysql.url}:3306/user_center?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&serverTimezone=Asia/Shanghai
+    username: ${common.mysql.username}
+    password: ${common.mysql.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
   cloud:
     nacos:
@@ -10,6 +12,46 @@ spring:
         server-addr: ${spring.cloud.nacos.config.server-addr}
         username: ${spring.cloud.nacos.config.username}
         password: ${spring.cloud.nacos.config.password}
+
+  data:
+    redis:
+      host: ${common.redis.host}
+      port: 6379
+      password: ${common.redis.password}
+      database: 0
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+
+# JWT配置
+jwt:
+  secret: GTmUdcz8iqwrH9UFh8AP4lLsadAWfJKI
+  expiration: 86400 # 24小时，单位：秒
+
+# 微信配置
+wechat:
+  api:
+    base-url: https://api.weixin.qq.com
+    session-url: /sns/jscode2session
+    token-url: /cgi-bin/token
+
+logs:
+  dir: ${user.home}/logs
+
+#logging:
+#  level:
+#    com.alibaba.nacos: DEBUG
+#    com.alibaba.cloud.nacos: DEBUG
+
+mybatis-plus:
+  configuration:
+    # SQL输出调试器，用于将SQL语句和结果输出到控制台，以便调试。开发测试环境使用，不建议生产环境使用。
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler
 
 knife4j:
   enable: true
@@ -25,9 +67,9 @@ knife4j:
     #重命名SwaggerModel名称,默认
     swaggerModelName: 用户中心实体列表
     #是否启用Host
-    enableHost: true
-    #启用Host后地址，例如：http://192.168.0.111:8080
-    enableHostText: https://gateway.ravey.com
+    enableHost: false
+    #启用Host后地址，dev环境换成本机的地址端口信息 例如：http://127.0.0.1:8080
+    enableHostText: http://127.0.0.1:8080
   #是否开启一个默认的跨域配置,该功能配合自定义Host使用
   cors: false
   #是否开启生产环境保护策略
@@ -39,4 +81,4 @@ knife4j:
     #basic用户名
     username: ravey
     #basic密码
-    password: 1234567890
+    password: aldlsdf.lPsseraddf
