@@ -80,6 +80,12 @@
             <groupId>com.github.binarywang</groupId>
             <artifactId>weixin-java-miniapp</artifactId>
         </dependency>
+
+        <!-- 阿里云OSS对象存储 -->
+        <dependency>
+            <groupId>com.ravey.common</groupId>
+            <artifactId>common-object-store-aliyun</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

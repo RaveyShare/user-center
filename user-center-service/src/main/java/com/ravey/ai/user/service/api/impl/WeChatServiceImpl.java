@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
+import cn.binarywang.wx.miniapp.bean.WxMaUserInfo;
 
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.api.impl.WxMaServiceImpl;
@@ -145,6 +146,36 @@ public class WeChatServiceImpl {
             errorResult.setErrcode(-1);
             errorResult.setErrmsg("调用微信API异常: " + e.getMessage());
             return errorResult;
+        }
+    }
+
+    /**
+     * 解密用户信息
+     *
+     * @param appId         应用ID
+     * @param sessionKey    会话密钥
+     * @param encryptedData 加密数据
+     * @param iv            加密算法的初始向量
+     * @return 解密后的用户信息
+     */
+    public WxMaUserInfo decryptUserInfo(String appId, String sessionKey, String encryptedData, String iv) {
+        try {
+            Apps app = getAppByAppId(appId);
+            if (app == null) {
+                log.error("应用不存在或已禁用: {}", appId);
+                return null;
+            }
+
+            WxMaDefaultConfigImpl config = new WxMaDefaultConfigImpl();
+            config.setAppid(app.getAppId());
+            config.setSecret(app.getAppSecret());
+            WxMaService wxService = new WxMaServiceImpl();
+            wxService.setWxMaConfig(config);
+
+            return wxService.getUserService().getUserInfo(sessionKey, encryptedData, iv);
+        } catch (Exception e) {
+            log.error("解密用户信息失败: appId={}, error={}", appId, e.getMessage());
+            return null;
         }
     }
 

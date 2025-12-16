@@ -1,6 +1,7 @@
 package com.ravey.ai.user.service.api.impl;
 
 import com.ravey.ai.user.api.dto.UsersDTO;
+import com.ravey.ai.user.api.model.req.UserUpdateReq;
 import com.ravey.ai.user.api.service.UsersService;
 import com.ravey.ai.user.service.converter.UsersConverter;
 import com.ravey.ai.user.service.dao.entity.Users;
@@ -8,6 +9,7 @@ import com.ravey.ai.user.service.dao.mapper.UsersMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 /**
  * 用户服务实现类
@@ -50,5 +52,37 @@ public class UsersServiceImpl implements UsersService {
             log.error("获取用户信息失败: userId={}", userId, e);
             throw new RuntimeException("获取用户信息失败: " + e.getMessage());
         }
+    }
+
+    @Override
+    public UsersDTO update(Long userId, UserUpdateReq req) {
+        log.info("更新用户信息: userId={}, req={}", userId, req);
+        
+        if (userId == null) {
+            throw new RuntimeException("用户ID不能为空");
+        }
+        
+        Users user = usersMapper.selectById(userId);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+        
+        boolean needUpdate = false;
+        if (StringUtils.hasText(req.getNickname()) && !req.getNickname().equals(user.getNickname())) {
+            user.setNickname(req.getNickname());
+            needUpdate = true;
+        }
+        
+        if (StringUtils.hasText(req.getAvatarUrl()) && !req.getAvatarUrl().equals(user.getAvatarUrl())) {
+            user.setAvatarUrl(req.getAvatarUrl());
+            needUpdate = true;
+        }
+        
+        if (needUpdate) {
+            usersMapper.updateById(user);
+            log.info("用户信息更新成功: userId={}", userId);
+        }
+        
+        return UsersConverter.toDTO(user);
     }
 }

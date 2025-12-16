@@ -25,6 +25,16 @@ public class MiniProgramLoginReq {
     private String code;
 
     /**
+     * 加密数据（用于获取UnionID等敏感信息）
+     */
+    private String encryptedData;
+
+    /**
+     * 加密算法的初始向量
+     */
+    private String iv;
+
+    /**
      * 用户信息（可选）
      */
     private UserInfo userInfo;

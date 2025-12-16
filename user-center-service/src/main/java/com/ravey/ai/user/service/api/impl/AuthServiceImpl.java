@@ -30,6 +30,7 @@ import com.ravey.ai.user.service.dao.mapper.UserSessionsMapper;
 import com.ravey.ai.user.service.dao.mapper.UsersMapper;
 import com.ravey.ai.user.service.dao.mapper.QrLoginRecordsMapper;
 import com.ravey.ai.user.service.context.UserContext;
+import cn.binarywang.wx.miniapp.bean.WxMaUserInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -76,6 +77,39 @@ public class AuthServiceImpl implements AuthService {
         try {
             // 1. 获取微信会话信息
             WeChatSessionDto weChatSession = getWeChatSession(req.getAppId(), req.getCode());
+
+            // 尝试通过解密数据获取UnionID
+            if (!StringUtils.hasText(weChatSession.getUnionid()) && 
+                StringUtils.hasText(req.getEncryptedData()) && 
+                StringUtils.hasText(req.getIv())) {
+                try {
+                    WxMaUserInfo wxMaUserInfo = weChatService.decryptUserInfo(
+                        req.getAppId(), 
+                        weChatSession.getSessionKey(), 
+                        req.getEncryptedData(), 
+                        req.getIv()
+                    );
+                    if (wxMaUserInfo != null) {
+                        if (StringUtils.hasText(wxMaUserInfo.getUnionId())) {
+                            weChatSession.setUnionid(wxMaUserInfo.getUnionId());
+                            log.info("通过解密获取到UnionID: {}", wxMaUserInfo.getUnionId());
+                        }
+                        
+                        // 如果前端没有传递明文用户信息，尝试从解密数据中获取
+                        if (req.getUserInfo() == null) {
+                            req.setUserInfo(new MiniProgramLoginReq.UserInfo());
+                        }
+                        if (!StringUtils.hasText(req.getUserInfo().getNickname()) && StringUtils.hasText(wxMaUserInfo.getNickName())) {
+                            req.getUserInfo().setNickname(wxMaUserInfo.getNickName());
+                        }
+                        if (!StringUtils.hasText(req.getUserInfo().getAvatarUrl()) && StringUtils.hasText(wxMaUserInfo.getAvatarUrl())) {
+                            req.getUserInfo().setAvatarUrl(wxMaUserInfo.getAvatarUrl());
+                        }
+                    }
+                } catch (Exception e) {
+                    log.warn("解密用户信息失败", e);
+                }
+            }
             
             // 2. 验证应用信息
             Apps app = validateAndGetApp(req.getAppId());

@@ -1,0 +1,45 @@
+# Nacos common.yml OSS配置示例
+# 请将以下配置添加到nacos配置中心的 common.yml 文件中
+
+# ===========================================
+# 阿里云OSS对象存储配置
+# ===========================================
+object:
+  store:
+    aliyun:
+      # OSS Endpoint，例如：oss-cn-hangzhou.aliyuncs.com
+      endpoint: oss-cn-hangzhou.aliyuncs.com
+      # 阿里云AccessKey ID（建议使用RAM子账户的AK）
+      access-key-id: your-access-key-id
+      # 阿里云AccessKey Secret（建议使用RAM子账户的AK）
+      access-key-secret: your-access-key-secret
+      # OSS Bucket名称
+      bucket-name: your-bucket-name
+      # OSS访问域名（用于拼接文件访问URL）
+      # 可以是OSS的公共读域名，也可以是绑定的自定义CDN域名
+      # 例如：https://your-bucket-name.oss-cn-hangzhou.aliyuncs.com
+      # 或：https://cdn.yourdomain.com
+      access-domain: https://your-bucket-name.oss-cn-hangzhou.aliyuncs.com
+
+# ===========================================
+# 配置说明
+# ===========================================
+# 1. endpoint: 根据您的OSS所在地域选择，参考：https://help.aliyun.com/document_detail/31837.html
+#    - 杭州：oss-cn-hangzhou.aliyuncs.com
+#    - 上海：oss-cn-shanghai.aliyuncs.com
+#    - 北京：oss-cn-beijing.aliyuncs.com
+#    - 深圳：oss-cn-shenzhen.aliyuncs.com
+#
+# 2. access-key-id 和 access-key-secret: 
+#    - 建议使用RAM子账户的AccessKey，并仅授予OSS相关权限
+#    - 切勿在代码或公开仓库中暴露AccessKey
+#    - 可使用Jasypt加密存储：ENC(加密后的值)
+#
+# 3. bucket-name: 您的OSS Bucket名称
+#    - 需要提前在阿里云控制台创建
+#    - 建议设置为私有读写，通过签名URL访问；或公共读用于头像等静态资源
+#
+# 4. access-domain: 文件访问域名
+#    - 如果Bucket为公共读，可直接使用 https://{bucket}.{endpoint} 格式
+#    - 如果需要CDN加速，请配置CDN并绑定自定义域名
+#    - 该配置用于生成文件的完整访问URL返回给前端
