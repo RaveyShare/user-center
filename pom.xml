@@ -4,7 +4,7 @@
 
     <groupId>com.ravey.ai.user</groupId>
     <artifactId>user-center</artifactId>
-    <version>1.0.13-SNAPSHOT</version>
+    <version>1.0.13</version>
     <name>user-center</name>
     <description>用户中心</description>
 
@@ -56,43 +56,43 @@
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-web</artifactId>
-                <version>${common.version}</version>
+                <version>1.0.5</version>
             </dependency>
 
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-api</artifactId>
-                <version>${common.version}</version>
+                <version>1.0.5</version>
             </dependency>
 
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-service</artifactId>
-                <version>${common.version}</version>
+                <version>1.0.5</version>
             </dependency>
 
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-dao-mp</artifactId>
-                <version>${common.version}</version>
+                <version>1.0.5</version>
             </dependency>
 
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-utils</artifactId>
-                <version>${common.version}</version>
+                <version>1.0.5</version>
             </dependency>
 
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-redis</artifactId>
-                <version>${common.version}</version>
+                <version>1.0.5</version>
             </dependency>
 
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-object-store-aliyun</artifactId>
-                <version>${common.version}</version>
+                <version>1.0.5</version>
             </dependency>
 
             <dependency>
@@ -162,7 +162,7 @@
         <connection>scm:git:https://github.com/RaveyShare/user-center.git</connection>
         <developerConnection>scm:git:git@github.com:RaveyShare/user-center.git</developerConnection>
         <url>https://github.com/RaveyShare/user-center</url>
-        <tag>HEAD</tag>
+        <tag>v1.0.13</tag>
     </scm>
 
     <build>
