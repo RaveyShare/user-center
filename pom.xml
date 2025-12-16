@@ -4,7 +4,7 @@
 
     <groupId>com.ravey.ai.user</groupId>
     <artifactId>user-center</artifactId>
-    <version>1.0.14-SNAPSHOT</version>
+    <version>1.0.13-SNAPSHOT</version>
     <name>user-center</name>
     <description>用户中心</description>
 
@@ -56,43 +56,43 @@
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-web</artifactId>
-                <version>1.0.5</version>
+                <version>${common.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-api</artifactId>
-                <version>1.0.5</version>
+                <version>${common.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-service</artifactId>
-                <version>1.0.5</version>
+                <version>${common.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-dao-mp</artifactId>
-                <version>1.0.5</version>
+                <version>${common.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-utils</artifactId>
-                <version>1.0.5</version>
+                <version>${common.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-redis</artifactId>
-                <version>1.0.5</version>
+                <version>${common.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.ravey.common</groupId>
                 <artifactId>common-object-store-aliyun</artifactId>
-                <version>1.0.5</version>
+                <version>${common.version}</version>
             </dependency>
 
             <dependency>
