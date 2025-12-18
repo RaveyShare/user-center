@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS apps (
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     nickname VARCHAR(100),
+    email VARCHAR(100) UNIQUE,
+    password VARCHAR(200),
     avatar_url VARCHAR(500),
     status TINYINT DEFAULT 1,
     creator VARCHAR(50),

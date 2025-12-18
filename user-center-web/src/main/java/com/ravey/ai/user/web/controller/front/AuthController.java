@@ -1,17 +1,10 @@
 package com.ravey.ai.user.web.controller.front;
 
-import com.ravey.ai.user.api.model.req.MiniProgramLoginReq;
-import com.ravey.ai.user.api.model.res.MiniProgramLoginRes;
+import com.ravey.ai.user.api.model.req.*;
+import com.ravey.ai.user.api.model.res.*;
 import com.ravey.ai.user.api.service.AuthService;
+import com.ravey.ai.user.api.service.UsersService;
 import com.ravey.common.service.web.result.HttpResult;
-import com.ravey.ai.user.api.model.req.QrGenerateReq;
-import com.ravey.ai.user.api.model.req.QrCheckReq;
-import com.ravey.ai.user.api.model.req.QrScanReq;
-import com.ravey.ai.user.api.model.req.QrConfirmReq;
-import com.ravey.ai.user.api.model.res.QrGenerateRes;
-import com.ravey.ai.user.api.model.res.QrCheckRes;
-import com.ravey.ai.user.api.model.req.WxaCodeReq;
-import com.ravey.ai.user.api.model.res.WxaCodeRes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +30,9 @@ public class AuthController {
     @Resource
     private AuthService authService;
 
+    @Resource
+    private UsersService usersService;
+
     /**
      * 微信小程序登录
      * 
@@ -47,20 +43,20 @@ public class AuthController {
     @Operation(summary = "微信小程序登录", description = "通过微信小程序登录凭证进行用户登录")
     public HttpResult<MiniProgramLoginRes> wxMiniAppLogin(@RequestBody MiniProgramLoginReq request) {
         log.info("微信小程序登录请求: appId={}", request.getAppId());
-        
+
         try {
             // 调用服务层进行登录
             MiniProgramLoginRes serviceRes = authService.miniProgramLogin(request);
-            
+
             // 设置令牌过期时间
             serviceRes.setExpiresIn(86400L); // 24小时
-            
-            log.info("微信小程序登录成功: appId={}, userId={}", 
-                    request.getAppId(), 
+
+            log.info("微信小程序登录成功: appId={}, userId={}",
+                    request.getAppId(),
                     serviceRes.getUserInfo() != null ? serviceRes.getUserInfo().getId() : null);
-            
+
             return HttpResult.success(serviceRes);
-            
+
         } catch (Exception e) {
             log.error("微信小程序登录失败: appId={}, error={}", request.getAppId(), e.getMessage(), e);
             throw new RuntimeException("登录失败: " + e.getMessage());
@@ -102,5 +98,30 @@ public class AuthController {
         return HttpResult.success(res);
     }
 
+    @PostMapping("/email/sendCode")
+    @Operation(summary = "发送邮箱验证码", description = "向指定邮箱发送验证码")
+    public HttpResult<Void> sendEmailCode(@RequestBody EmailSendCodeReq req) {
+        usersService.sendEmailCode(req);
+        return HttpResult.success(null);
+    }
+
+    @PostMapping("/email/register")
+    @Operation(summary = "邮箱注册", description = "通过邮箱和验证码注册新用户")
+    public HttpResult<LoginRes> registerByEmail(@RequestBody EmailRegisterReq req) {
+        return HttpResult.success(usersService.registerByEmail(req));
+    }
+
+    @PostMapping("/email/login")
+    @Operation(summary = "邮箱登录", description = "支持密码登录或验证码登录")
+    public HttpResult<LoginRes> loginByEmail(@RequestBody EmailLoginReq req) {
+        return HttpResult.success(usersService.loginByEmail(req));
+    }
+
+    @PostMapping("/email/resetPassword")
+    @Operation(summary = "重置密码", description = "通过验证码验证后重置密码")
+    public HttpResult<Void> resetPassword(@RequestBody PasswordResetReq req) {
+        usersService.resetPassword(req);
+        return HttpResult.success(null);
+    }
 
 }

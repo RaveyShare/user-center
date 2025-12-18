@@ -24,6 +24,18 @@ public class Users extends BaseEntity {
     private String nickname;
 
     /**
+     * 邮箱
+     */
+    @TableField("email")
+    private String email;
+
+    /**
+     * 密码
+     */
+    @TableField("password")
+    private String password;
+
+    /**
      * 头像URL
      */
     @TableField("avatar_url")

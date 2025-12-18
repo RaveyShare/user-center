@@ -22,10 +22,32 @@ import org.springframework.beans.factory.annotation.Qualifier;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-    public class CacheService {
+public class CacheService {
 
     @Qualifier("redisTemplate")
     private final RedisTemplate<Object, Object> redisTemplate;
+
+    /**
+     * 设置缓存
+     * 
+     * @param key     键
+     * @param value   值
+     * @param timeout 过期时间（秒）
+     */
+    public void set(String key, Object value, long timeout) {
+        redisTemplate.opsForValue().set(key, value, timeout, TimeUnit.SECONDS);
+    }
+
+    /**
+     * 获取缓存
+     * 
+     * @param key 键
+     * @return 值
+     */
+    public String get(String key) {
+        Object val = redisTemplate.opsForValue().get(key);
+        return val != null ? val.toString() : null;
+    }
 
     /**
      * 缓存微信小程序 Access Token
@@ -35,7 +57,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
      */
     public void cacheMiniAppAccessToken(String appId, String accessToken) {
         String key = CacheConstants.formatKey(CacheConstants.MINI_APP_ACCESS_TOKEN_KEY, appId);
-        redisTemplate.opsForValue().set(key, accessToken, CacheConstants.MINI_APP_ACCESS_TOKEN_EXPIRE, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(key, accessToken, CacheConstants.MINI_APP_ACCESS_TOKEN_EXPIRE,
+                TimeUnit.SECONDS);
         log.info("缓存微信小程序AccessToken: appId={}", appId);
     }
 
@@ -110,13 +133,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
         // 双向缓存：token -> userId 和 userId -> token
         String tokenKey = CacheConstants.formatKey(CacheConstants.USER_SESSION_KEY, token);
         String userKey = CacheConstants.formatKey(CacheConstants.USER_TOKEN_KEY, userId);
-        
+
         // 缓存 token -> userId
         redisTemplate.opsForValue().set(tokenKey, userId, CacheConstants.USER_SESSION_EXPIRE, TimeUnit.SECONDS);
-        
+
         // 缓存 userId -> token（便于后续查找和管理）
         redisTemplate.opsForValue().set(userKey, token, CacheConstants.USER_SESSION_EXPIRE, TimeUnit.SECONDS);
-        
+
         log.info("缓存用户会话（双向）: userId={}, token={}", userId, token.substring(0, 10) + "...");
     }
 
@@ -154,17 +177,17 @@ import org.springframework.beans.factory.annotation.Qualifier;
     public void removeUserSession(String token) {
         // 先获取用户ID
         Long userId = getUserSession(token);
-        
+
         // 删除 token -> userId 缓存
         String tokenKey = CacheConstants.formatKey(CacheConstants.USER_SESSION_KEY, token);
         redisTemplate.delete(tokenKey);
-        
+
         // 删除 userId -> token 缓存
         if (userId != null) {
             String userKey = CacheConstants.formatKey(CacheConstants.USER_TOKEN_KEY, userId);
             redisTemplate.delete(userKey);
         }
-        
+
         log.info("删除用户会话（双向）: userId={}", userId);
     }
 
@@ -176,18 +199,19 @@ import org.springframework.beans.factory.annotation.Qualifier;
     public void removeUserSessionByUserId(Long userId) {
         // 先获取Token
         String token = getUserToken(userId);
-        
+
         // 删除 userId -> token 缓存
         String userKey = CacheConstants.formatKey(CacheConstants.USER_TOKEN_KEY, userId);
         redisTemplate.delete(userKey);
-        
+
         // 删除 token -> userId 缓存
         if (token != null) {
             String tokenKey = CacheConstants.formatKey(CacheConstants.USER_SESSION_KEY, token);
             redisTemplate.delete(tokenKey);
         }
-        
-        log.info("根据用户ID删除会话（双向）: userId={}, token={}", userId, token != null ? token.substring(0, 10) + "..." : "null");
+
+        log.info("根据用户ID删除会话（双向）: userId={}, token={}", userId,
+                token != null ? token.substring(0, 10) + "..." : "null");
     }
 
     /**
@@ -286,11 +310,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
     public void refreshUserSession(String token, Long userId) {
         String tokenKey = CacheConstants.formatKey(CacheConstants.USER_SESSION_KEY, token);
         String userKey = CacheConstants.formatKey(CacheConstants.USER_TOKEN_KEY, userId);
-        
+
         // 刷新两个缓存的过期时间
         redisTemplate.expire(tokenKey, CacheConstants.USER_SESSION_EXPIRE, TimeUnit.SECONDS);
         redisTemplate.expire(userKey, CacheConstants.USER_SESSION_EXPIRE, TimeUnit.SECONDS);
-        
+
         log.debug("刷新用户会话过期时间: userId={}, token={}", userId, token.substring(0, 10) + "...");
     }
 

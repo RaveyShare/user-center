@@ -22,13 +22,14 @@ public class UsersConverter {
         if (entity == null) {
             return null;
         }
-        
+
         UsersDTO dto = new UsersDTO();
         dto.setId(entity.getId());
         dto.setNickname(entity.getNickname());
         dto.setAvatar(entity.getAvatarUrl());
+        dto.setEmail(entity.getEmail());
         dto.setStatus(entity.getStatus());
-        
+
         return dto;
     }
 
@@ -42,13 +43,14 @@ public class UsersConverter {
         if (dto == null) {
             return null;
         }
-        
+
         Users entity = new Users();
         entity.setId(dto.getId());
         entity.setNickname(dto.getNickname());
         entity.setAvatarUrl(dto.getAvatar());
+        entity.setEmail(dto.getEmail());
         entity.setStatus(dto.getStatus());
-        
+
         return entity;
     }
 }
