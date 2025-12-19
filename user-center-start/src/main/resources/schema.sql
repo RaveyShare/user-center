@@ -64,3 +64,20 @@ CREATE TABLE IF NOT EXISTS user_sessions (
     updater_id VARCHAR(50),
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+-- 创建二维码登录记录表
+CREATE TABLE IF NOT EXISTS qr_login_records (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    qrcode_id VARCHAR(64) UNIQUE NOT NULL,
+    app_id BIGINT,
+    user_id BIGINT,
+    openid VARCHAR(100),
+    status TINYINT DEFAULT 0,
+    expire_time DATETIME NOT NULL,
+    creator VARCHAR(50),
+    creator_id VARCHAR(50),
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updater VARCHAR(50),
+    updater_id VARCHAR(50),
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

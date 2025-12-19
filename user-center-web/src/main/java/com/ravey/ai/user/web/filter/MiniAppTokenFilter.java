@@ -47,6 +47,10 @@ public class MiniAppTokenFilter implements Filter {
             "/front/auth/qr/generate",
             "/front/auth/qr/check",
             "/front/auth/qr/wxacode",
+            "/front/auth/email/sendCode",
+            "/front/auth/email/register",
+            "/front/auth/email/login",
+            "/front/auth/email/resetPassword",
             "/api/front/auth/qr/generate",
             "/api/front/auth/qr/check",
             "/api/front/auth/qr/wxacode",
@@ -54,8 +58,7 @@ public class MiniAppTokenFilter implements Filter {
             "/actuator",
             "/swagger",
             "/v3/api-docs",
-            "/favicon.ico"
-    );
+            "/favicon.ico");
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -65,7 +68,7 @@ public class MiniAppTokenFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        
+
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
@@ -122,7 +125,7 @@ public class MiniAppTokenFilter implements Filter {
             // 设置用户上下文
             UserContext.setCurrentUser(user);
             UserContext.setCurrentToken(token);
-            
+
             // 从token中获取appId并设置到上下文
             String appId = jwtUtils.getAppIdFromToken(token);
             if (StringUtils.hasText(appId)) {
@@ -230,7 +233,7 @@ public class MiniAppTokenFilter implements Filter {
 
             HttpResult<Object> result = HttpResult.failure(status.value(), message);
             String jsonResponse = objectMapper.writeValueAsString(result);
-            
+
             response.getWriter().write(jsonResponse);
             response.getWriter().flush();
         } catch (IOException e) {

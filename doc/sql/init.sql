@@ -20,7 +20,9 @@ CREATE TABLE apps (
 -- 用户表（多应用版本）
 CREATE TABLE users (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '用户ID',
-    nickname VARCHAR(50) COMMENT '昵称',
+    nickname VARCHAR(100) COMMENT '昵称',
+    email VARCHAR(100) UNIQUE COMMENT '邮箱',
+    password VARCHAR(200) COMMENT '密码',
     avatar_url VARCHAR(500) COMMENT '头像URL',
     status TINYINT DEFAULT 1 COMMENT '用户状态：1-正常，0-禁用',
     creator VARCHAR(50) COMMENT '创建人',
