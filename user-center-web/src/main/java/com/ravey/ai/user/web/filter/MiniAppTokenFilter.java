@@ -139,6 +139,9 @@ public class MiniAppTokenFilter implements Filter {
 
         } catch (Exception e) {
             log.error("Token过滤器处理异常", e);
+            if (e instanceof ServletException){
+                throw (ServletException) e;
+            }
             writeErrorResponse(httpResponse, "认证服务异常", HttpStatus.INTERNAL_SERVER_ERROR);
         } finally {
             // 清理用户上下文

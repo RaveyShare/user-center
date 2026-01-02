@@ -1,5 +1,7 @@
 package com.ravey.ai.user.service.component;
 
+import com.ravey.ai.user.api.enums.UserErrorCode;
+import com.ravey.common.api.model.ServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -41,7 +43,7 @@ public class MailService {
             log.info("邮件已成功发送至: {}", to);
         } catch (Exception e) {
             log.error("邮件发送失败至: {}, error: {}", to, e.getMessage());
-            throw new RuntimeException("邮件发送失败");
+            throw new ServiceException(UserErrorCode.EMAIL_SEND_FAILED);
         }
     }
 }

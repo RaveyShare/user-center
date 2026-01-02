@@ -14,6 +14,8 @@ import com.ravey.ai.user.service.dao.entity.UserSessions;
 import com.ravey.ai.user.service.dao.entity.Users;
 import com.ravey.ai.user.service.dao.mapper.UserSessionsMapper;
 import com.ravey.ai.user.service.dao.mapper.UsersMapper;
+import com.ravey.ai.user.api.enums.UserErrorCode;
+import com.ravey.common.api.model.ServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -81,7 +83,7 @@ public class UsersServiceImpl implements UsersService {
 
         Users user = usersMapper.selectById(userId);
         if (user == null) {
-            throw new RuntimeException("用户不存在");
+            throw new ServiceException(UserErrorCode.USER_NOT_FOUND);
         }
 
         boolean needUpdate = false;
@@ -110,7 +112,7 @@ public class UsersServiceImpl implements UsersService {
         log.info("发送邮箱验证码: email={}, scene={}", email, scene);
 
         if (!StringUtils.hasText(email)) {
-            throw new RuntimeException("邮箱不能为空");
+            throw new ServiceException(UserErrorCode.EMAIL_EMPTY);
         }
 
         // 生成并发送验证码
@@ -127,13 +129,13 @@ public class UsersServiceImpl implements UsersService {
 
         // 1. 校验验证码 (scene=1)
         if (!verificationCodeService.verifyCode(req.getEmail(), 1, req.getCode())) {
-            throw new RuntimeException("验证码错误或已过期");
+            throw new ServiceException(UserErrorCode.VERIFICATION_CODE_ERROR);
         }
 
         // 2. 检查邮箱是否已存在
         Users existingUser = usersMapper.selectOne(new LambdaQueryWrapper<Users>().eq(Users::getEmail, req.getEmail()));
         if (existingUser != null) {
-            throw new RuntimeException("该邮箱已注册");
+            throw new ServiceException(UserErrorCode.EMAIL_ALREADY_REGISTERED);
         }
 
         // 3. 创建用户
@@ -155,21 +157,21 @@ public class UsersServiceImpl implements UsersService {
 
         Users user = usersMapper.selectOne(new LambdaQueryWrapper<Users>().eq(Users::getEmail, req.getEmail()));
         if (user == null) {
-            throw new RuntimeException("用户不存在");
+            throw new ServiceException(UserErrorCode.USER_NOT_FOUND);
         }
 
         if (req.getLoginType() == 1) {
             // 密码登录
             if (!hashPassword(req.getPassword()).equals(user.getPassword())) {
-                throw new RuntimeException("密码错误");
+                throw new ServiceException(UserErrorCode.PASSWORD_ERROR);
             }
         } else if (req.getLoginType() == 2) {
             // 验证码登录 (scene=2)
             if (!verificationCodeService.verifyCode(req.getEmail(), 2, req.getCode())) {
-                throw new RuntimeException("验证码错误或已过期");
+                throw new ServiceException(UserErrorCode.VERIFICATION_CODE_ERROR);
             }
         } else {
-            throw new RuntimeException("不支持的登录方式");
+            throw new ServiceException(UserErrorCode.INVALID_LOGIN_TYPE);
         }
 
         return buildLoginResponse(user);

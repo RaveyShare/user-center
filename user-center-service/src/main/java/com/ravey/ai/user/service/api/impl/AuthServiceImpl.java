@@ -30,6 +30,8 @@ import com.ravey.ai.user.service.dao.mapper.UserSessionsMapper;
 import com.ravey.ai.user.service.dao.mapper.UsersMapper;
 import com.ravey.ai.user.service.dao.mapper.QrLoginRecordsMapper;
 import com.ravey.ai.user.service.context.UserContext;
+import com.ravey.ai.user.api.enums.UserErrorCode;
+import com.ravey.common.api.model.ServiceException;
 import cn.binarywang.wx.miniapp.bean.WxMaUserInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -131,7 +133,7 @@ public class AuthServiceImpl implements AuthService {
             
         } catch (Exception e) {
             log.error("小程序登录失败: appId={}, error={}", req.getAppId(), e.getMessage(), e);
-            throw new RuntimeException("登录失败: " + e.getMessage());
+            throw new ServiceException(UserErrorCode.WECHAT_LOGIN_FAILED);
         }
     }
 
@@ -202,16 +204,16 @@ public class AuthServiceImpl implements AuthService {
                         .last("LIMIT 1")
         );
         if (record == null) {
-            throw new RuntimeException("二维码不存在");
+            throw new ServiceException(UserErrorCode.QR_CODE_NOT_FOUND);
         }
         if (record.getExpireTime() != null && record.getExpireTime().isBefore(LocalDateTime.now())) {
             record.setStatus(3);
             qrLoginRecordsMapper.updateById(record);
-            throw new RuntimeException("二维码已过期");
+            throw new ServiceException(UserErrorCode.QR_CODE_EXPIRED);
         }
         Long userId = UserContext.getCurrentUser() != null ? UserContext.getCurrentUser().getId() : null;
         if (userId == null) {
-            throw new RuntimeException("未登录");
+            throw new ServiceException(UserErrorCode.NOT_LOGGED_IN);
         }
         record.setUserId(userId);
         record.setStatus(1);
@@ -227,16 +229,16 @@ public class AuthServiceImpl implements AuthService {
                         .last("LIMIT 1")
         );
         if (record == null) {
-            throw new RuntimeException("二维码不存在");
+            throw new ServiceException(UserErrorCode.QR_CODE_NOT_FOUND);
         }
         if (record.getExpireTime() != null && record.getExpireTime().isBefore(LocalDateTime.now())) {
             record.setStatus(3);
             qrLoginRecordsMapper.updateById(record);
-            throw new RuntimeException("二维码已过期");
+            throw new ServiceException(UserErrorCode.QR_CODE_EXPIRED);
         }
         Long userId = UserContext.getCurrentUser() != null ? UserContext.getCurrentUser().getId() : null;
         if (userId == null) {
-            throw new RuntimeException("未登录");
+            throw new ServiceException(UserErrorCode.NOT_LOGGED_IN);
         }
         record.setUserId(userId);
         record.setStatus(2);
@@ -244,7 +246,7 @@ public class AuthServiceImpl implements AuthService {
 
         Apps targetApp = appsMapper.selectById(record.getAppId());
         if (targetApp == null) {
-            throw new RuntimeException("应用不存在或已禁用");
+            throw new ServiceException(UserErrorCode.APP_DISABLED);
         }
         String accessToken = generateAccessToken(userId, targetApp.getAppId());
         createAndCacheUserSession(userId, targetApp.getId(), accessToken);
@@ -261,12 +263,12 @@ public class AuthServiceImpl implements AuthService {
                         .last("LIMIT 1")
         );
         if (record == null) {
-            throw new RuntimeException("二维码不存在");
+            throw new ServiceException(UserErrorCode.QR_CODE_NOT_FOUND);
         }
         if (record.getExpireTime() != null && record.getExpireTime().isBefore(LocalDateTime.now())) {
             record.setStatus(3);
             qrLoginRecordsMapper.updateById(record);
-            throw new RuntimeException("二维码已过期");
+            throw new ServiceException(UserErrorCode.QR_CODE_EXPIRED);
         }
 
         byte[] cached = cacheService.getWxaCode(req.getQrcodeId());
@@ -280,7 +282,7 @@ public class AuthServiceImpl implements AuthService {
                 req.getHyaline()
         );
         if (bytes == null || bytes.length == 0) {
-            throw new RuntimeException("生成小程序码失败");
+            throw new ServiceException(UserErrorCode.SYSTEM_ERROR);
         }
         if (cached == null) {
             cacheService.cacheWxaCode(req.getQrcodeId(), bytes);
@@ -302,7 +304,7 @@ public class AuthServiceImpl implements AuthService {
         
         if (weChatSession == null || (weChatSession.getErrcode() != null && weChatSession.getErrcode() != 0)) {
             String errorMsg = weChatSession != null ? weChatSession.getErrmsg() : "未知错误";
-            throw new RuntimeException("微信登录失败: " + errorMsg);
+            throw new ServiceException(UserErrorCode.WECHAT_LOGIN_FAILED);
         }
         
         return weChatSession;
@@ -314,7 +316,7 @@ public class AuthServiceImpl implements AuthService {
     private Apps validateAndGetApp(String appId) {
         Apps app = getAppByAppId(appId);
         if (app == null) {
-            throw new RuntimeException("应用不存在或已禁用: " + appId);
+            throw new ServiceException(UserErrorCode.APP_NOT_FOUND);
         }
         return app;
     }
